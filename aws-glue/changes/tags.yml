@@ -1,0 +1,135 @@
+Parameters:
+  pContainerImageName:
+    Type: String
+    AllowedPattern: >-
+      ([a-z0-9]{0,}([a-z0-9][/]){0,}([a-z0-9][a-z0-9-]{0,}){0,}){0,}[a-z0-9]$
+    Description: |+
+      Container Image Name (without a preceeding /). Application will be prepended.
+      The Image name may contain up to 63 characters. Image names may contain lowercase alphanumeric and dashes.
+    Default:
+      "change-this-value"
+  pSystemOwner:
+    Type: String
+    Description: |+
+      Enter the Active Directory ID of the system owner If you are not sure then usethe requestor from the account request spreadsheet.
+      It cannot be more than 20 char, and cannot include [] ; : | = + * ? < > / \ , @ or non printable characters
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+  pApplicationName:
+    Type: String
+    Description: Enter the application name. if you are not sure then use the value from the project name in Gitlab.
+    ConstraintDescription: The application name must be between 1 and 8 characters in length
+    AllowedPattern: >-
+      (^[a-zA-Z0-9][a-zA-Z0-9._()-]{0,7}$)
+    MinLength: 1
+    MaxLength: 8
+  pPurpose:
+    Type: String
+    Description: Select the general purpose of the resource
+    ConstraintDescription: The resource purpose must be an allowed value
+    AllowedValues:
+      - wws
+      - appl
+      - daba
+      - devo
+      - netw
+      - secr
+      - comp
+      - dago
+    Default: appl
+  pResourceOwner:
+    Type: String
+    Description: Enter the Active Directory group or user that is the resource owner of this solution.
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+  pResourceOwner:
+    Type: String
+    Description: Select the most exposure that this solution isexposed to
+    ConstraintDescription: The resource exposure must be an allowed value
+    AllowedValues:
+      - Public
+      - Partner
+      - Saas
+      - OtherSecCloud
+      - AwsGovCloud
+      - SecOnPremise
+    Default: SecOnPremise 
+  pResourceSensitivity:
+    Type: String
+    Description: Select the sensitivity of resource in this solution
+    ConstraintDescription: The resource sensitivity must be an allowed value
+    AllowedValues:
+      - Red
+      - Amber
+      - Green
+    Default: Amber
+  pDataSteward:
+    Type: String
+    Description: Enter the Active Directory group or user that is the data steward of this solution.
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+  pDataSensitivity:
+    Type: String
+    Description: Select the data sensitivity of data hosted by this solution
+    ConstraintDescription: The data sensitivity must be an allowed value
+    AllowedValues:
+      - Red
+      - Amber
+      - Green
+    Default: Amber
+Mappings:
+  NameTagPartitionToPartitionAbbreviatoin:
+    aws-us-gov:
+      PartitionAbbr: g
+    aws:
+      PartitionAbbr: c
+  NameTagRegionToRegionAbbreviatoin:
+    us-east-1:
+      RegionAbbr: use1
+    us-east-2:
+      RegionAbbr: use2
+    us-west-1:
+      RegionAbbr: usw1
+    us-west-2:
+      RegionAbbr: usw2
+Tags:
+  - key: Name
+    Value:
+      "Fn::Sub":
+        - >-
+          A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${cName}
+        - Partition:  !FindInMap
+            - NameTagPartitionToPartitionAbbreviatoin
+            - !Ref "AWS::Partition"
+            - PartitionAbbr
+          Region: !FindInMap
+            - NameTagRegionToRegionAbbreviatoin
+            - !Ref "AWS:Region"
+            - RegionAbbr
+          LifeCycle:  !Sub "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"  
+          DivisionName: !Sub "{{resolve:ssm:/account/config/BuisnessLowercase:1}}"
+          Purpose: !Ref pPurpose 
+          ServiceType: repository
+          cName: !Ref pContainerImageName 
+  - Key: LifeCycle
+    Value: !Sub "{{resolve:ssm:/account/config/LifeCycle:1}}"
+  - Key: SystemOwner
+    Value: !Ref pSystemOwner 
+  - Key: ApplicationName
+    Value: !Ref pApplicationName 
+  - Key: Business
+    Value: !Sub "{{resolve:ssm:/account/config/Business:1}}"
+  - Key: SupportBusiness
+    Value: !Sub "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+  - Key: SupportCcoeGroup
+    Value: !Sub "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+  - Key: DataSteward
+    Value: !Ref pDataSteward 
+  - Key: DataSensitivity
+    Value: !Ref pDataSensitivity 
+  - Key: ResourceOwner
+    Value: !Ref pResourceOwner 
+  - Key: ResourceSensitivity
+    Value: !Ref pResourceSensitivity 
+  - Key: ResourceExposure
+    Value: !Ref pResourceExposure 

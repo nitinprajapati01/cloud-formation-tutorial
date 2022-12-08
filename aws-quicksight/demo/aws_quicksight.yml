@@ -1,0 +1,698 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Automated deployment of QuickSight Assets.'
+
+Parameters:
+  1stReadMe:
+    Type: String
+    Default: README
+    Description: 'PREREQUISITES - 1) QuickSight should be setup on the aws account, 2) An user with author/admin role should be setup in QuickSight. 3)SPICE capacity should be available in the region where you are creating this stack.'
+
+  QuickSightIdentityRegion:
+    Type: String
+    MinLength: 1
+    Description: REQUIRED - QuickSight identity region (region where your users are managed; run list-users command and check the user arn if you are not sure of the identity region).
+
+  QuickSightUser:
+    Type: String
+    MinLength: 1
+    Description: REQUIRED - User name of QuickSight author/admin from default namespace (as displayed in QuickSight admin panel). Dashboard created by this template with be shared with this user.
+
+  Suffix:
+    Type: String
+    Description: OPTIONAL - If you need to create multiple instances of this sample on same aws account, add a short NUMERIC suffix here.
+Resources:
+  QSTCFBuildQSDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties:
+      DataSourceId: !Join
+        - ''
+        - - QSTCF-DataSource
+          - !Ref Suffix
+      Name: !Join
+        - ''
+        - - QSTCF-DataSource
+          - !Ref Suffix
+      AwsAccountId: !Ref AWS::AccountId
+      Type: S3
+      DataSourceParameters:
+        S3Parameters:
+          ManifestFileLocation:
+            Bucket: ee-assets-prod-us-east-1
+            Key: modules/337d5d05acc64a6fa37bcba6b921071c/v1/SalesDataManifest.json
+      Permissions:
+        - Principal: !Join
+            - ''
+            - - 'arn:aws:quicksight:'
+              - !Ref QuickSightIdentityRegion
+              - ':'
+              - !Ref AWS::AccountId
+              - ':user/default/'
+              - !Ref QuickSightUser
+          Actions:
+            - quicksight:UpdateDataSourcePermissions
+            - quicksight:DescribeDataSource
+            - quicksight:DescribeDataSourcePermissions
+            - quicksight:PassDataSource
+            - quicksight:UpdateDataSource
+            - quicksight:DeleteDataSource
+
+  QSTCFBuildQSDataSet:
+    Type: AWS::QuickSight::DataSet
+    Properties:
+      DataSetId: !Join
+        - ''
+        - - QSTCF-DataSet
+          - !Ref Suffix
+      Name: !Join
+        - ''
+        - - QSTCF-DataSet
+          - !Ref Suffix
+      AwsAccountId: !Ref AWS::AccountId
+      PhysicalTableMap:
+          PhysicalTable1:
+            S3Source:
+              DataSourceArn: !GetAtt QSTCFBuildQSDataSource.Arn
+              InputColumns:
+              - Name: ColumnId-1
+                Type: STRING
+              - Name: ColumnId-2
+                Type: STRING
+              - Name: ColumnId-3
+                Type: STRING
+              - Name: ColumnId-4
+                Type: STRING
+              - Name: ColumnId-5
+                Type: STRING
+              - Name: ColumnId-6
+                Type: STRING
+              - Name: ColumnId-7
+                Type: STRING
+              - Name: ColumnId-8
+                Type: STRING
+              - Name: ColumnId-9
+                Type: STRING
+              - Name: ColumnId-10
+                Type: STRING
+              - Name: ColumnId-11
+                Type: STRING
+              - Name: ColumnId-12
+                Type: STRING
+              UploadSettings:
+                ContainsHeader: true
+                Delimiter: ','
+                Format: CSV
+                StartFromRow: 1
+                TextQualifier: DOUBLE_QUOTE
+      LogicalTableMap:
+          LogicalTable1:
+            Alias: QSTCF-DataSet
+            DataTransforms:
+            - RenameColumnOperation:
+                ColumnName: ColumnId-1
+                NewColumnName: Date
+            - CastColumnTypeOperation:
+                ColumnName: Date
+                Format: M/d/yyyy
+                NewColumnType: DATETIME
+            - RenameColumnOperation:
+                ColumnName: ColumnId-2
+                NewColumnName: Salesperson
+            - RenameColumnOperation:
+                ColumnName: ColumnId-3
+                NewColumnName: Lead Name
+            - RenameColumnOperation:
+                ColumnName: ColumnId-4
+                NewColumnName: Segment
+            - RenameColumnOperation:
+                ColumnName: ColumnId-5
+                NewColumnName: Region
+            - RenameColumnOperation:
+                ColumnName: ColumnId-6
+                NewColumnName: Target Close
+            - CastColumnTypeOperation:
+                ColumnName: Target Close
+                Format: M/d/yyyy
+                NewColumnType: DATETIME
+            - RenameColumnOperation:
+                ColumnName: ColumnId-7
+                NewColumnName: Forecasted Monthly Revenue
+            - CastColumnTypeOperation:
+                ColumnName: Forecasted Monthly Revenue
+                NewColumnType: INTEGER
+            - RenameColumnOperation:
+                ColumnName: ColumnId-8
+                NewColumnName: Opportunity Stage
+            - RenameColumnOperation:
+                ColumnName: ColumnId-9
+                NewColumnName: Weighted Revenue
+            - CastColumnTypeOperation:
+                ColumnName: Weighted Revenue
+                NewColumnType: INTEGER
+            - RenameColumnOperation:
+                ColumnName: ColumnId-10
+                NewColumnName: Is Closed
+            - RenameColumnOperation:
+                ColumnName: ColumnId-11
+                NewColumnName: ActiveItem
+            - RenameColumnOperation:
+                ColumnName: ColumnId-12
+                NewColumnName: IsLatest
+            - CastColumnTypeOperation:
+                ColumnName: IsLatest
+                NewColumnType: INTEGER
+            - TagColumnOperation:
+                ColumnName: Region
+                Tags:
+                - ColumnGeographicRole: STATE
+            - ProjectOperation:
+                ProjectedColumns:
+                - Date
+                - Salesperson
+                - Lead Name
+                - Segment
+                - Region
+                - Target Close
+                - Forecasted Monthly Revenue
+                - Opportunity Stage
+                - Weighted Revenue
+                - Is Closed
+                - ActiveItem
+                - IsLatest
+            Source:
+              PhysicalTableId: PhysicalTable1
+      Permissions:
+          - Principal: !Join
+              - ''
+              - - 'arn:aws:quicksight:'
+                - !Ref QuickSightIdentityRegion
+                - ':'
+                - !Ref AWS::AccountId
+                - ':user/default/'
+                - !Ref QuickSightUser
+            Actions:
+              - quicksight:UpdateDataSetPermissions
+              - quicksight:DescribeDataSet
+              - quicksight:DescribeDataSetPermissions
+              - quicksight:PassDataSet
+              - quicksight:DescribeIngestion
+              - quicksight:ListIngestions
+              - quicksight:UpdateDataSet
+              - quicksight:DeleteDataSet
+              - quicksight:CreateIngestion
+              - quicksight:CancelIngestion
+      ImportMode: SPICE
+
+  QSTCFBuildQSTheme:
+    Type: AWS::QuickSight::Theme
+    Properties:
+      ThemeId: !Join
+        - ''
+        - - QSTCF-Theme
+          - !Ref Suffix
+      Name: !Join
+        - ''
+        - - QSTCF-Theme
+          - !Ref Suffix
+      AwsAccountId: !Ref AWS::AccountId
+      BaseThemeId: SEASIDE
+      Configuration:
+        UIColorPalette:
+          PrimaryBackground: '#EEEEEE'
+          SecondaryBackground: '#EEEEEE'
+      Permissions:
+        - Principal: !Join
+            - ''
+            - - 'arn:aws:quicksight:'
+              - !Ref QuickSightIdentityRegion
+              - ':'
+              - !Ref AWS::AccountId
+              - ':user/default/'
+              - !Ref QuickSightUser
+          Actions:
+            - quicksight:UpdateThemeAlias
+            - quicksight:ListThemeVersions
+            - quicksight:UpdateThemePermissions
+            - quicksight:DescribeThemeAlias
+            - quicksight:DeleteThemeAlias
+            - quicksight:DeleteTheme
+            - quicksight:ListThemeAliases
+            - quicksight:DescribeTheme
+            - quicksight:CreateThemeAlias
+            - quicksight:UpdateTheme
+            - quicksight:DescribeThemePermissions
+      VersionDescription: Initial version
+
+  QSTCFBuildQSTemplate:
+    Type: AWS::QuickSight::Template
+    Properties:
+      TemplateId: !Join
+        - ''
+        - - QSTCF-Template
+          - !Ref Suffix
+      Name: !Join
+        - ''
+        - - QSTCF-Template
+          - !Ref Suffix
+      AwsAccountId: !Ref AWS::AccountId
+      SourceEntity:
+        SourceTemplate:
+          Arn: arn:aws:quicksight:us-east-1:874374045911:template/QSTCF-Template
+      Permissions:
+        - Principal: !Join
+            - ''
+            - - 'arn:aws:quicksight:'
+              - !Ref QuickSightIdentityRegion
+              - ':'
+              - !Ref AWS::AccountId
+              - ':user/default/'
+              - !Ref QuickSightUser
+          Actions:
+            - quicksight:DescribeTemplate
+      VersionDescription: Initial version - Copied over from AWS account.
+  
+  CloudwatchTemplate:
+    Type: AWS::QuickSight::Template
+    Properties:
+      TemplateId: !Ref LogGroup
+  
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP access via port 80 and RDP access via port 3389
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '3389'
+          ToPort: '3389'
+          CidrIp: !Ref RDPLocation
+  LogRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+      Path: /
+      Policies:
+        - PolicyName: LogRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:Create*'
+                  - 'logs:PutLogEvents'
+                  - 's3:GetObject'
+                Resource:
+                  - 'arn:aws:logs:*:*:*'
+                  - 'arn:aws:s3:::*'
+  LogRoleInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref LogRole
+  WebServerHost:
+    Type: 'AWS::EC2::Instance'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          config:
+            - 00-ConfigureCWLogs
+            - 01-InstallWebServer
+            - 02-ConfigureApplication
+            - 03-Finalize
+        00-ConfigureCWLogs:
+          files:
+            'C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json':
+              content: !Sub |
+                {
+                  "EngineConfiguration": {
+                      "Components": [
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "ApplicationEventLog",
+                              "Parameters": {
+                                  "Levels": "7",
+                                  "LogName": "Application"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "SystemEventLog",
+                              "Parameters": {
+                                  "Levels": "7",
+                                  "LogName": "System"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "SecurityEventLog",
+                              "Parameters": {
+                                  "Levels": "7",
+                                  "LogName": "Security"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "EC2ConfigLog",
+                              "Parameters": {
+                                  "CultureName": "en-US",
+                                  "Encoding": "ASCII",
+                                  "Filter": "EC2ConfigLog.txt",
+                                  "LogDirectoryPath": "C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
+                                  "TimeZoneKind": "UTC",
+                                  "TimestampFormat": "yyyy-MM-ddTHH:mm:ss.fffZ:"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CfnInitLog",
+                              "Parameters": {
+                                  "CultureName": "en-US",
+                                  "Encoding": "ASCII",
+                                  "Filter": "cfn-init.log",
+                                  "LogDirectoryPath": "C:\\cfn\\log",
+                                  "TimeZoneKind": "Local",
+                                  "TimestampFormat": "yyyy-MM-dd HH:mm:ss,fff"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "IISLogs",
+                              "Parameters": {
+                                  "CultureName": "en-US",
+                                  "Encoding": "UTF-8",
+                                  "Filter": "",
+                                  "LineCount": "3",
+                                  "LogDirectoryPath": "C:\\inetpub\\logs\\LogFiles\\W3SVC1",
+                                  "TimeZoneKind": "UTC",
+                                  "TimestampFormat": "yyyy-MM-dd HH:mm:ss"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.PerformanceCounterComponent.PerformanceCounterInputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "MemoryPerformanceCounter",
+                              "Parameters": {
+                                  "CategoryName": "Memory",
+                                  "CounterName": "Available MBytes",
+                                  "DimensionName": "",
+                                  "DimensionValue": "",
+                                  "InstanceName": "",
+                                  "MetricName": "Memory",
+                                  "Unit": "Megabytes"
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatchApplicationEventLog",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "LogGroup": "${LogGroup}",
+                                  "LogStream": "{instance_id}/ApplicationEventLog",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatchSystemEventLog",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "LogGroup": "${LogGroup}",
+                                  "LogStream": "{instance_id}/SystemEventLog",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatchSecurityEventLog",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "LogGroup": "${LogGroup}",
+                                  "LogStream": "{instance_id}/SecurityEventLog",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatchEC2ConfigLog",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "LogGroup": "${LogGroup}",
+                                  "LogStream": "{instance_id}/EC2ConfigLog",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatchCfnInitLog",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "LogGroup": "${LogGroup}",
+                                  "LogStream": "{instance_id}/CfnInitLog",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatchIISLogs",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "LogGroup": "${LogGroup}",
+                                  "LogStream": "{instance_id}/IISLogs",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          },
+                          {
+                              "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatch.CloudWatchOutputComponent,AWS.EC2.Windows.CloudWatch",
+                              "Id": "CloudWatch",
+                              "Parameters": {
+                                  "AccessKey": "",
+                                  "NameSpace": "Windows/Default",
+                                  "Region": "${AWS::Region}",
+                                  "SecretKey": ""
+                              }
+                          }
+                      ],
+                      "Flows": {
+                          "Flows": [
+                              "ApplicationEventLog,CloudWatchApplicationEventLog",
+                              "SystemEventLog,CloudWatchSystemEventLog",
+                              "SecurityEventLog,CloudWatchSecurityEventLog",
+                              "EC2ConfigLog,CloudWatchEC2ConfigLog",
+                              "CfnInitLog,CloudWatchCfnInitLog",
+                              "IISLogs,CloudWatchIISLogs",
+                              "MemoryPerformanceCounter,CloudWatch"
+                          ]
+                      },
+                      "PollInterval": "00:00:05"
+                  },
+                  "IsEnabled": true
+                }
+          commands:
+            0-enableSSM:
+              command: >-
+                powershell.exe -Command "Set-Service -Name AmazonSSMAgent
+                -StartupType Automatic" 
+              waitAfterCompletion: '0'
+            1-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent "
+              waitAfterCompletion: '30'
+        01-InstallWebServer:
+          commands:
+            01_install_webserver:
+              command: >-
+                powershell.exe -Command "Install-WindowsFeature Web-Server 
+                -IncludeAllSubFeature"
+              waitAfterCompletion: '0'
+        02-ConfigureApplication:
+          files:
+            'c:\Inetpub\wwwroot\index.htm':
+              content: >-
+                <html> <head> <title>Test Application Page</title> </head>
+                <body> <h1>Congratulations !! Your IIS server is
+                configured.</h1> </body> </html>
+        03-Finalize:
+          commands:
+            00_signal_success:
+              command: !Sub >-
+                cfn-signal.exe -e 0 --resource WebServerHost --stack
+                ${AWS::StackName} --region ${AWS::Region}
+              waitAfterCompletion: '0'
+    Properties:
+      KeyName: !Ref KeyPair
+      ImageId: !FindInMap 
+        - AWSAMIRegionMap
+        - !Ref 'AWS::Region'
+        - WS2012R2
+      InstanceType: t2.xlarge
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      IamInstanceProfile: !Ref LogRoleInstanceProfile
+      UserData: !Base64 
+        'Fn::Sub': >
+          <script>
+
+          wmic product where "description='Amazon SSM Agent' " uninstall
+
+          wmic product where "description='aws-cfn-bootstrap' " uninstall 
+
+          start /wait c:\\Windows\\system32\\msiexec /passive /qn /i
+          https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-win64-latest.msi
+
+          powershell.exe -Command "iwr
+          https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe 
+          -UseBasicParsing -OutFile C:\\AmazonSSMAgentSetup.exe"
+
+          start /wait C:\\AmazonSSMAgentSetup.exe /install /quiet
+
+          cfn-init.exe -v -c config -s ${AWS::StackName} --resource
+          WebServerHost --region ${AWS::Region} 
+
+          </script>
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 7
+  404MetricFilter:
+    Type: 'AWS::Logs::MetricFilter'
+    Properties:
+      LogGroupName: !Ref LogGroup
+      FilterPattern: >-
+        [timestamps, serverip, method, uri, query, port, dash, clientip,
+        useragent, status_code = 404, ...]
+      MetricTransformations:
+        - MetricValue: '1'
+          MetricNamespace: test/404s
+          MetricName: test404Count
+  404Alarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: The number of 404s is greater than 2 over 2 minutes
+      MetricName: test404Count
+      Namespace: test/404s
+      Statistic: Sum
+      Period: '60'
+      EvaluationPeriods: '2'
+      Threshold: '2'
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      ComparisonOperator: GreaterThanThreshold
+  AlarmNotificationTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      Subscription:
+        - Endpoint: !Ref OperatorEmail
+          Protocol: email
+
+  QSTCFBuildQSAnalysis:
+    Type: AWS::QuickSight::Analysis
+    Properties:
+      AnalysisId: !Join
+        - ''
+        - - QSTCF-Analysis
+          - !Ref Suffix
+      Name: !Join
+        - ''
+        - - QSTCF-Analysis
+          - !Ref Suffix
+      AwsAccountId: !Ref AWS::AccountId
+      SourceEntity:
+        SourceTemplate:
+          Arn: !GetAtt QSTCFBuildQSTemplate.Arn
+          DataSetReferences:
+            - DataSetPlaceholder: SalesData
+              DataSetArn: !GetAtt QSTCFBuildQSDataSet.Arn
+      Permissions:
+        - Principal: !Join
+            - ''
+            - - 'arn:aws:quicksight:'
+              - !Ref QuickSightIdentityRegion
+              - ':'
+              - !Ref AWS::AccountId
+              - ':user/default/'
+              - !Ref QuickSightUser
+          Actions:
+            - quicksight:RestoreAnalysis
+            - quicksight:UpdateAnalysisPermissions
+            - quicksight:DeleteAnalysis
+            - quicksight:DescribeAnalysisPermissions
+            - quicksight:QueryAnalysis
+            - quicksight:DescribeAnalysis
+            - quicksight:UpdateAnalysis
+      ThemeArn: !GetAtt QSTCFBuildQSTheme.Arn
+
+  QSTCFBuildQSDashboard:
+    Type: AWS::QuickSight::Dashboard
+    Properties:
+      DashboardId: !Join
+        - ''
+        - - QSTCF-Dashboard
+          - !Ref Suffix
+      Name: !Join
+        - ''
+        - - QSTCF-Dashboard
+          - !Ref Suffix
+      AwsAccountId: !Ref AWS::AccountId
+      SourceEntity:
+        SourceTemplate:
+          Arn: !GetAtt QSTCFBuildQSTemplate.Arn
+          DataSetReferences:
+            - DataSetPlaceholder: SalesData
+              DataSetArn: !GetAtt QSTCFBuildQSDataSet.Arn
+      Permissions:
+        - Principal: !Join
+            - ''
+            - - 'arn:aws:quicksight:'
+              - !Ref QuickSightIdentityRegion
+              - ':'
+              - !Ref AWS::AccountId
+              - ':user/default/'
+              - !Ref QuickSightUser
+          Actions:
+            - quicksight:DescribeDashboard
+            - quicksight:ListDashboardVersions
+            - quicksight:UpdateDashboardPermissions
+            - quicksight:QueryDashboard
+            - quicksight:UpdateDashboard
+            - quicksight:DeleteDashboard
+            - quicksight:DescribeDashboardPermissions
+            - quicksight:UpdateDashboardPublishedVersion
+      ThemeArn: !GetAtt QSTCFBuildQSTheme.Arn
+      DashboardPublishOptions:
+        AdHocFilteringOption:
+          AvailabilityStatus: DISABLED
+Outputs:
+  InstanceId:
+    Description: The instance ID of the web server
+    Value: !Ref WebServerHost
+  WebsiteURL:
+    Value: !Sub 'http://${WebServerHost.PublicDnsName}'
+    Description: URL for newly created IIS web server
+  PublicIP:
+    Description: Public IP address of the web server
+    Value: !GetAtt 
+      - WebServerHost
+      - PublicIp
+  CloudWatchLogGroupName:
+    Description: The name of the CloudWatch log group
+    Value: !Ref LogGroup

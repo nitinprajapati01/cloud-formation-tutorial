@@ -1,0 +1,38 @@
+ParameterName:
+ResourceName:
+  HelloLambda:
+    Type: AWS::Lambda::Function
+    Properties: 
+      Architectures: 
+        - String
+      Code: 
+        Code
+      CodeSigningConfigArn: String
+      DeadLetterConfig: 
+        DeadLetterConfig
+      Description: String
+      Environment: 
+        Environment
+      EphemeralStorage: 
+        EphemeralStorage
+      FileSystemConfigs: 
+        - FileSystemConfig
+      FunctionName: String
+      Handler: String
+      ImageConfig: 
+        ImageConfig
+      KmsKeyArn: String
+      Layers: 
+        - String
+      MemorySize: Integer
+      PackageType: String
+      ReservedConcurrentExecutions: Integer
+      Role: String
+      Runtime: String
+      Tags: 
+        - Tag
+      Timeout: Integer
+      TracingConfig: 
+        TracingConfig
+      VpcConfig: 
+        VpcConfig

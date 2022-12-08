@@ -1,0 +1,41 @@
+Parameters:
+  PipelineName:
+    Description: The name of the pipeline.
+    Type: String
+    Default: "mypipe"
+  PipelineDisplayName:
+    Description: The display name of the pipeline.
+    Type: String
+    Default: "mydisplay"
+  PipelineDescription:
+    Description: The description of the pipeline.
+    Type: String
+    Default: "mydiscription"
+  PipelineDefinitionBody:
+    Description: The definition of the pipeline. This can be either a JSON string or an Amazon S3 location.
+    Type: String
+    Default: "{\"Version\":\"2020-12-01\",\"Parameters\":[{\"Name\":\"InputDataSource\",\"DefaultValue\":\"\"},{\"Name\":\"InstanceCount\",\"Type\":\"Integer\",\"DefaultValue\":1}],\"Steps\":[{\"Name\":\"Training1\",\"Type\":\"Training\",\"Arguments\":{\"InputDataConfig\":[{\"DataSource\":{\"S3DataSource\":{\"S3Uri\":{\"Get\":\"Parameters.InputDataSource\"}}}}],\"OutputDataConfig\":{\"S3OutputPath\":\"s3://my-s3-bucket/\"},\"ResourceConfig\":{\"InstanceType\":\"ml.m5.large\",\"InstanceCount\":{\"Get\":\"Parameters.InstanceCount\"},\"VolumeSizeInGB\":1024}}}]}"
+  RoleArn:
+    Description: The Amazon Resource Name (ARN) of the IAM role used to execute the pipeline.
+    Type: String
+    Default: "arn:aws:iam::293328213636:role/sagemaker_custom"
+Resources:
+  MyAwesomePipeline:
+    Type: AWS::SageMaker::Pipeline
+    Properties:
+      PipelineName: 
+        Ref: PipelineName
+      PipelineDisplayName: 
+        Ref: PipelineDisplayName
+      PipelineDescription: 
+        Ref: PipelineDescription
+      PipelineDefinition:
+        PipelineDefinitionBody: 
+          Ref: PipelineDefinitionBody
+      RoleArn: 
+          Ref: RoleArn
+Outputs:
+  PipelineName:
+    Description: Name of pipeline
+    Value:
+      Ref: MyAwesomePipeline

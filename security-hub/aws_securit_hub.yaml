@@ -1,0 +1,14 @@
+Description: Example Hub with Tags
+Parameters:
+  Tags:
+    Type: String
+Resources:
+  ExampleHubWithTags:
+    Type: 'AWS::SecurityHub::Hub'
+    Properties:
+      Tags:
+        key1: value1
+        key2: value2
+Outputs:
+  HubArn:
+    Value: !Ref ExampleHubWithTags

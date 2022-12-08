@@ -1,0 +1,11 @@
+Resources:
+  QuickSightDataSet:
+    Type: AWS::QuickSight::DataSet
+    Properties: 
+      AwsAccountId: '293328213636'
+      DataSetId: 'd645s73'
+      ImportMode: 'DIRECT_QUERY'
+      PhysicalTableMap: 
+        Key : 'Name'
+        Value: 'demodataset'
+      Name: 'mydataset'

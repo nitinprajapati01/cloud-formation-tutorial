@@ -1,0 +1,784 @@
+Parameters:
+  AwsAccountId:
+    Description: The AWS account ID.
+    Type: double
+  DataSourceId:
+    Description: An ID for the data source. This ID is unique per AWS Region for each AWS account.
+    Type: boolean
+  Tags:
+    Description: Contains a map of the key-value pairs for the resource tag or tags assigned to the data source.
+    Type: String
+  Name:
+    Description: A display name for the data source.
+    Type: String
+  Type:
+    Description: The type of the data source. To return a list of all data sources, use ListDataSources.
+    Type: String
+  Domain:
+    Description: The OpenSearch domain.
+    Type: String
+  AmazonOpenSearchParametersDomain:
+    Description: The OpenSearch domain.
+    Type: String
+  WorkGroup:
+    Description: The workgroup that Amazon Athena uses
+    Type: String
+  AuroraParametersDatabase:
+    Description: Database.
+    Type: String
+  AuroraParametersHost:
+    Description: Host.
+    Type: String
+  AuroraParametersPort:
+    Description: Port.
+    Type: double
+  AuroraPostgreSqlParametersDatabase:
+    Description: The Amazon Aurora PostgreSQL database to connect to.
+    Type: String
+  AuroraPostgreSqlParametersHost:
+    Description: The Amazon Aurora PostgreSQL-Compatible host to connect to.
+    Type: String
+  AuroraPostgreSqlParametersPort:
+    Description: The port that Amazon Aurora PostgreSQL is listening on.
+    Type: double
+  MariaDbParametersDatabase:
+    Description: databse
+    Type: String
+  MariaDbParametersHost:
+    Description: host
+    Type: String
+  MariaDbParametersPort:
+    Description: port
+    Type: double
+  MySqlParametersDatabase:
+    Description: databse
+    Type: String
+  MySqlParametersHost:
+    Description: host
+    Type: String
+  MySqlParametersPort:
+    Description: port
+    Type: double
+  OracleParametersDatabase:
+    Description: databse
+    Type: String
+  OracleParametersHost:
+    Description: host
+    Type: String
+  OracleParametersPort:
+    Description: port
+    Type: double
+  PostgreSqlParametersDatabase:
+    Description: databse
+    Type: String
+  PostgreSqlParametersHost:
+    Description: host
+    Type: String
+  PostgreSqlParametersPort:
+    Description: port
+    Type: double
+  PrestoParametersCatalog:
+    Description: catalog
+    Type: String
+  PrestoParametersHost:
+    Description: host
+    Type: String
+  PrestoParametersPort:
+    Description: port
+    Type: double
+  RdsParametersDatabase:
+    Description: database
+    Type: String
+  RdsParametersInstanceId:
+    Description: InstanceId
+    Type: String
+  RedshiftParametersClusterId:
+    Description: ClusterId
+    Type: String
+  RedshiftParametersDatabase:
+    Description: databse
+    Type: String
+  RedshiftParametersHost:
+    Description: host
+    Type: String
+  RedshiftParametersPort:
+    Description: port
+    Type: double
+  ManifestFileLocationBucket:
+    Description: Amazon S3 bucket.
+    Type: String
+  ManifestFileLocationKey:
+    Description: Amazon S3 key that identifies an object.
+    Type: String
+  SnowflakeParametersDatabase:
+    Description: databse
+    Type: String
+  SnowflakeParametersHost:
+    Description: host
+    Type: String
+  SnowflakeParametersWarehouse:
+    Description: Warehouse
+    Type: String
+  SqlServerParametersDatabase:
+    Description: databse
+    Type: String
+  SqlServerParametersHost:
+    Description: host
+    Type: String
+  SqlServerParametersPort:
+    Description: port
+    Type: double
+  TeradataParametersDatabase:
+    Description: databse
+    Type: String
+  TeradataParametersHost:
+    Description: host
+    Type: String
+  TeradataParametersPort:
+    Description: port
+    Type: double
+  SparkParametersHost:
+    Description: host
+    Type: String
+  SparkParametersPort:
+    Description: port
+    Type: double
+  Domain1:
+    Description: The OpenSearch domain.
+    Type: String
+  AmazonOpenSearchParametersDomain1:
+    Description: The OpenSearch domain.
+    Type: String
+  WorkGroup1:
+    Description: The workgroup that Amazon Athena uses
+    Type: String
+  AuroraParametersDatabase1:
+    Description: Database.
+    Type: String
+  AuroraParametersHost1:
+    Description: Host.
+    Type: String
+  AuroraParametersPort1:
+    Description: Port.
+    Type: double
+  AuroraPostgreSqlParametersDatabase1:
+    Description: The Amazon Aurora PostgreSQL database to connect to.
+    Type: String
+  AuroraPostgreSqlParametersHost1:
+    Description: The Amazon Aurora PostgreSQL-Compatible host to connect to.
+    Type: String
+  AuroraPostgreSqlParametersPort1:
+    Description: The port that Amazon Aurora PostgreSQL is listening on.
+    Type: double
+  MariaDbParametersDatabase1:
+    Description: databse
+    Type: String
+  MariaDbParametersHost1:
+    Description: host
+    Type: String
+  MariaDbParametersPort1:
+    Description: port
+    Type: double
+  MySqlParametersDatabase1:
+    Description: databse
+    Type: String
+  MySqlParametersHost1:
+    Description: host
+    Type: String
+  MySqlParametersPort1:
+    Description: port
+    Type: double
+  OracleParametersDatabase1:
+    Description: databse
+    Type: String
+  OracleParametersHost1:
+    Description: host
+    Type: String
+  OracleParametersPort1:
+    Description: port
+    Type: double
+  PostgreSqlParametersDatabase1:
+    Description: databse
+    Type: String
+  PostgreSqlParametersHost1:
+    Description: host
+    Type: String
+  PostgreSqlParametersPort1:
+    Description: port
+    Type: double
+  PrestoParametersCatalog1:
+    Description: catalog
+    Type: String
+  PrestoParametersHost1:
+    Description: host
+    Type: String
+  PrestoParametersPort1:
+    Description: port
+    Type: double
+  RdsParametersDatabase1:
+    Description: database
+    Type: String
+  RdsParametersInstanceId1:
+    Description: InstanceId
+    Type: String
+  RedshiftParametersClusterId1:
+    Description: ClusterId
+    Type: String
+  RedshiftParametersDatabase1:
+    Description: databse
+    Type: String
+  RedshiftParametersHost1:
+    Description: host
+    Type: String
+  RedshiftParametersPort1:
+    Description: port
+    Type: double
+  ManifestFileLocationBucket1:
+    Description: Amazon S3 bucket.
+    Type: String
+  ManifestFileLocationKey1:
+    Description: Amazon S3 key that identifies an object.
+    Type: String
+  SnowflakeParametersDatabase1:
+    Description: databse
+    Type: String
+  SnowflakeParametersHost1:
+    Description: host
+    Type: String
+  SnowflakeParametersWarehouse1:
+    Description: Warehouse
+    Type: String
+  SqlServerParametersDatabase1:
+    Description: databse
+    Type: String
+  SqlServerParametersHost1:
+    Description: host
+    Type: String
+  SqlServerParametersPort1:
+    Description: port
+    Type: double
+  TeradataParametersDatabase1:
+    Description: databse
+    Type: String
+  TeradataParametersHos1t1:
+    Description: host
+    Type: String
+  TeradataParametersPort1:
+    Description: port
+    Type: double
+  SparkParametersHost1:
+    Description: host
+    Type: String
+  SparkParametersPort1:
+    Description: port
+    Type: double
+  Domain2:
+    Description: The OpenSearch domain.
+    Type: String
+  AmazonOpenSearchParametersDomain2:
+    Description: The OpenSearch domain.
+    Type: String
+  WorkGroup2:
+    Description: The workgroup that Amazon Athena uses
+    Type: String
+  AuroraParametersDatabase2:
+    Description: Database.
+    Type: String
+  AuroraParametersHost2:
+    Description: Host.
+    Type: String
+  AuroraParametersPort2:
+    Description: Port.
+    Type: double
+  AuroraPostgreSqlParametersDatabase2:
+    Description: The Amazon Aurora PostgreSQL database to connect to.
+    Type: String
+  AuroraPostgreSqlParametersHost2:
+    Description: The Amazon Aurora PostgreSQL-Compatible host to connect to.
+    Type: String
+  AuroraPostgreSqlParametersPort2:
+    Description: The port that Amazon Aurora PostgreSQL is listening on.
+    Type: double
+  MariaDbParametersDatabase2:
+    Description: databse
+    Type: String
+  MariaDbParametersHost2:
+    Description: host
+    Type: String
+  MariaDbParametersPort2:
+    Description: port
+    Type: double
+  MySqlParametersDatabase2:
+    Description: databse
+    Type: String
+  MySqlParametersHost2:
+    Description: host
+    Type: String
+  MySqlParametersPort2:
+    Description: port
+    Type: double
+  OracleParametersDatabase2:
+    Description: databse
+    Type: String
+  OracleParametersHost2:
+    Description: host
+    Type: String
+  OracleParametersPort2:
+    Description: port
+    Type: double
+  PostgreSqlParametersDatabase2:
+    Description: databse
+    Type: String
+  PostgreSqlParametersHost2:
+    Description: host
+    Type: String
+  PostgreSqlParametersPort2:
+    Description: port
+    Type: double
+  PrestoParametersCatalog2:
+    Description: catalog
+    Type: String
+  PrestoParametersHost2:
+    Description: host
+    Type: String
+  PrestoParametersPort2:
+    Description: port
+    Type: double
+  RdsParametersDatabase2:
+    Description: database
+    Type: String
+  RdsParametersInstanceId2:
+    Description: InstanceId
+    Type: String
+  RedshiftParametersClusterId2:
+    Description: ClusterId
+    Type: String
+  RedshiftParametersDatabase2:
+    Description: databse
+    Type: String
+  RedshiftParametersHost2:
+    Description: host
+    Type: String
+  RedshiftParametersPort2:
+    Description: port
+    Type: double
+  ManifestFileLocationBucket2:
+    Description: Amazon S3 bucket.
+    Type: String
+  ManifestFileLocationKey2:
+    Description: Amazon S3 key that identifies an object.
+    Type: String
+  SnowflakeParametersDatabase2:
+    Description: databse
+    Type: String
+  SnowflakeParametersHost2:
+    Description: host
+    Type: String
+  SnowflakeParametersWarehouse2:
+    Description: Warehouse
+    Type: String
+  SqlServerParametersDatabase2:
+    Description: databse
+    Type: String
+  SqlServerParametersHost2:
+    Description: host
+    Type: String
+  SqlServerParametersPort2:
+    Description: port
+    Type: double
+  TeradataParametersDatabase2:
+    Description: databse
+    Type: String
+  TeradataParametersHos2t2:
+    Description: host
+    Type: String
+  TeradataParametersPort2:
+    Description: port
+    Type: double
+  SparkParametersHost2:
+    Description: host
+    Type: String
+  SparkParametersPort2:
+    Description: port
+    Type: double
+  Actions:
+    Description: The IAM action to grant or revoke permissions on.
+    Type: String
+  Principal:
+    Description: The Amazon Resource Name (ARN) of the principal. 
+    Type: String
+  VpcConnectionArn:
+    Description: The Amazon Resource Name (ARN) for the VPC connection.
+    Type: String
+  DisableSsl:
+    Description: A Boolean option to control whether SSL should be disabled.
+    Type: String
+  CopySourceArn:
+    Description: The Amazon Resource Name (ARN) of a data source that has the credential pair that you want to use.
+    Type: String
+  Password:
+    Description: Password
+    Type: String
+  Username:
+    Description: Username
+    Type: String
+  ErrorInfoType:
+    Description: Error message.
+    Type: String
+  ErrorInfoMessage:
+    Description: Error type.
+    Type: String
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AlternateDataSourceParameters: 
+        AmazonElasticsearchParameters: 
+          Domain: 
+            Ref: Domain
+        AmazonOpenSearchParameters: 
+          Domain: 
+            Ref: AmazonOpenSearchParametersDomain  
+        AthenaParameters: 
+          WorkGroup: 
+            Ref: WorkGroup
+        AuroraParameters: 
+          Database: 
+            Ref: AuroraParametersDatabase
+          Host: 
+            Ref: AuroraParametersHost
+          Port: 
+            Ref: AuroraParametersPort
+        AuroraPostgreSqlParameters: 
+          Database: 
+            Ref: AuroraPostgreSqlParametersDatabase
+          Host: 
+            Ref: AuroraPostgreSqlParametersHost
+          Port: 
+            Ref: AuroraPostgreSqlParametersPort
+        MariaDbParameters: 
+          Database: 
+            Ref: MariaDbParametersDatabase
+          Host: 
+            Ref: MariaDbParametersHost
+          Port: 
+            Ref: MariaDbParametersPort
+        MySqlParameters: 
+          Database: 
+            Ref: MySqlParametersDatabase
+          Host: 
+            Ref: MySqlParametersHost
+          Port: 
+            Ref: MySqlParametersPort
+        OracleParameters: 
+          Database: 
+            Ref: OracleParametersDatabase
+          Host: 
+            Ref: OracleParametersHost
+          Port: 
+            Ref: OracleParametersPort
+        PostgreSqlParameters: 
+          Database: 
+            Ref: PostgreSqlParametersDatabase
+          Host: 
+            Ref: PostgreSqlParametersHost
+          Port: 
+            Ref: PostgreSqlParametersPort
+        PrestoParameters: 
+          Catalog: 
+            Ref: PrestoParametersCatalog
+          Host: 
+            Ref: PrestoParametersHost
+          Port: 
+            Ref: PrestoParametersPort
+        RdsParameters: 
+          Database: 
+            Ref: RdsParametersDatabase
+          InstanceId: 
+            Ref: RdsParametersInstanceId
+        RedshiftParameters: 
+          ClusterId: 
+            Ref: RedshiftParametersClusterId
+          Database: 
+            Ref: RedshiftParametersDatabase
+          Host: 
+            Ref: RedshiftParametersHost
+          Port: 
+            Ref: RedshiftParametersPort
+        S3Parameters: 
+          ManifestFileLocation: 
+            Bucket: 
+              Ref: ManifestFileLocationBucket
+            Key: 
+              Ref: ManifestFileLocationKey
+        SnowflakeParameters: 
+          Database: 
+            Ref: SnowflakeParametersDatabase
+          Host: 
+            Ref: SnowflakeParametersHost
+          Warehouse: 
+            Ref: SnowflakeParametersWarehouse
+        SparkParameters: 
+          Host: 
+            Ref: SparkParametersHost
+          Port: 
+            Ref: SparkParametersPort
+        SqlServerParameters: 
+          Database: 
+            Ref: SqlServerParametersDatabase
+          Host: 
+            Ref: SqlServerParametersHost
+          Port: 
+            Ref: SqlServerParametersPort
+        TeradataParameters: 
+          Database: 
+            Ref: TeradataParametersDatabase
+          Host: 
+            Ref: TeradataParametersHost
+          Port: 
+            Ref: TeradataParametersPort
+      AwsAccountId: 
+        Ref: AwsAccountId
+      Credentials: 
+        CopySourceArn: 
+          Ref: CopySourceArn
+        CredentialPair: 
+          AlternateDataSourceParameters: 
+            DataSourceParameters: 
+              AmazonElasticsearchParameters: 
+                Domain: 
+                  Ref: Domain2
+              AmazonOpenSearchParameters: 
+                Domain: 
+                  Ref: AmazonOpenSearchParametersDomain2  
+              AthenaParameters: 
+                WorkGroup: 
+                  Ref: WorkGroup2
+              AuroraParameters: 
+                Database: 
+                  Ref: AuroraParametersDatabase2
+                Host: 
+                  Ref: AuroraParametersHost2
+                Port: 
+                  Ref: AuroraParametersPort2
+              AuroraPostgreSqlParameters: 
+                Database: 
+                  Ref: AuroraPostgreSqlParametersDatabase2
+                Host: 
+                  Ref: AuroraPostgreSqlParametersHost2
+                Port: 
+                  Ref: AuroraPostgreSqlParametersPort2
+              MariaDbParameters: 
+                Database: 
+                  Ref: MariaDbParametersDatabase2
+                Host: 
+                  Ref: MariaDbParametersHost2
+                Port: 
+                  Ref: MariaDbParametersPort2
+              MySqlParameters: 
+                Database: 
+                  Ref: MySqlParametersDatabase2
+                Host: 
+                  Ref: MySqlParametersHost2
+                Port: 
+                  Ref: MySqlParametersPort2
+              OracleParameters: 
+                Database: 
+                  Ref: OracleParametersDatabase2
+                Host: 
+                  Ref: OracleParametersHost2
+                Port: 
+                  Ref: OracleParametersPort2
+              PostgreSqlParameters: 
+                Database: 
+                  Ref: PostgreSqlParametersDatabase2
+                Host: 
+                  Ref: PostgreSqlParametersHost2
+                Port: 
+                  Ref: PostgreSqlParametersPort2
+              PrestoParameters: 
+                Catalog: 
+                  Ref: PrestoParametersCatalog2
+                Host: 
+                  Ref: PrestoParametersHost2
+                Port: 
+                  Ref: PrestoParametersPort2
+              RdsParameters: 
+                Database: 
+                  Ref: RdsParametersDatabase2
+                InstanceId: 
+                  Ref: RdsParametersInstanceId2
+              RedshiftParameters: 
+                ClusterId: 
+                  Ref: RedshiftParametersClusterId2
+                Database: 
+                  Ref: RedshiftParametersDatabase2
+                Host: 
+                  Ref: RedshiftParametersHost2
+                Port: 
+                  Ref: RedshiftParametersPort2
+              S3Parameters: 
+                ManifestFileLocation: 
+                  Bucket: 
+                    Ref: ManifestFileLocationBucket2
+                  Key: 
+                    Ref: ManifestFileLocationKey2
+              SnowflakeParameters: 
+                Database: 
+                  Ref: SnowflakeParametersDatabase2
+                Host: 
+                  Ref: SnowflakeParametersHost2
+                Warehouse: 
+                  Ref: SnowflakeParametersWarehouse2
+              SparkParameters: 
+                Host: 
+                  Ref: SparkParametersHost2
+                Port: 
+                  Ref: SparkParametersPort2
+              SqlServerParameters: 
+                Database: 
+                  Ref: SqlServerParametersDatabase2
+                Host: 
+                  Ref: SqlServerParametersHost2
+                Port: 
+                  Ref: SqlServerParametersPort2
+              TeradataParameters: 
+                Database: 
+                  Ref: TeradataParametersDatabase2
+                Host: 
+                  Ref: TeradataParametersHost2
+                Port: 
+                  Ref: TeradataParametersPort2
+          Password: 
+            Ref: Password
+          Username: 
+            Ref: Username
+      DataSourceId: 
+        Ref: DataSourceId
+      DataSourceParameters: 
+        AmazonElasticsearchParameters: 
+          Domain: 
+            Ref: Domain1
+        AmazonOpenSearchParameters: 
+          Domain: 
+            Ref: AmazonOpenSearchParametersDomain1  
+        AthenaParameters: 
+          WorkGroup: 
+            Ref: WorkGroup1
+        AuroraParameters: 
+          Database: 
+            Ref: AuroraParametersDatabase1
+          Host: 
+            Ref: AuroraParametersHost1
+          Port: 
+            Ref: AuroraParametersPort1
+        AuroraPostgreSqlParameters: 
+          Database: 
+            Ref: AuroraPostgreSqlParametersDatabase1
+          Host: 
+            Ref: AuroraPostgreSqlParametersHost1
+          Port: 
+            Ref: AuroraPostgreSqlParametersPort1
+        MariaDbParameters: 
+          Database: 
+            Ref: MariaDbParametersDatabase1
+          Host: 
+            Ref: MariaDbParametersHost1
+          Port: 
+            Ref: MariaDbParametersPort1
+        MySqlParameters: 
+          Database: 
+            Ref: MySqlParametersDatabase1
+          Host: 
+            Ref: MySqlParametersHost1
+          Port: 
+            Ref: MySqlParametersPort1
+        OracleParameters: 
+          Database: 
+            Ref: OracleParametersDatabase1
+          Host: 
+            Ref: OracleParametersHost1
+          Port: 
+            Ref: OracleParametersPort1
+        PostgreSqlParameters: 
+          Database: 
+            Ref: PostgreSqlParametersDatabase1
+          Host: 
+            Ref: PostgreSqlParametersHost1
+          Port: 
+            Ref: PostgreSqlParametersPort1
+        PrestoParameters: 
+          Catalog: 
+            Ref: PrestoParametersCatalog1
+          Host: 
+            Ref: PrestoParametersHost1
+          Port: 
+            Ref: PrestoParametersPort1
+        RdsParameters: 
+          Database: 
+            Ref: RdsParametersDatabase1
+          InstanceId: 
+            Ref: RdsParametersInstanceId1
+        RedshiftParameters: 
+          ClusterId: 
+            Ref: RedshiftParametersClusterId1
+          Database: 
+            Ref: RedshiftParametersDatabase1
+          Host: 
+            Ref: RedshiftParametersHost1
+          Port: 
+            Ref: RedshiftParametersPort1
+        S3Parameters: 
+          ManifestFileLocation: 
+            Bucket: 
+              Ref: ManifestFileLocationBucket1
+            Key: 
+              Ref: ManifestFileLocationKey1
+        SnowflakeParameters: 
+          Database: 
+            Ref: SnowflakeParametersDatabase1
+          Host: 
+            Ref: SnowflakeParametersHost1
+          Warehouse: 
+            Ref: SnowflakeParametersWarehouse1
+        SparkParameters: 
+          Host: 
+            Ref: SparkParametersHost1
+          Port: 
+            Ref: SparkParametersPort1
+        SqlServerParameters: 
+          Database: 
+            Ref: SqlServerParametersDatabase1
+          Host: 
+            Ref: SqlServerParametersHost1
+          Port: 
+            Ref: SqlServerParametersPort1
+        TeradataParameters: 
+          Database: 
+            Ref: TeradataParametersDatabase1
+          Host: 
+            Ref: TeradataParametersHost1
+          Port: 
+            Ref: TeradataParametersPort1
+      ErrorInfo: 
+        Message: 
+          Ref: ErrorInfoMessage
+        Type: 
+          Ref: ErrorInfoType
+      Name: 
+        Ref: Name
+      Permissions: 
+        Actions: 
+          Ref: Actions
+        Principal: 
+          Ref: Principal
+      SslProperties: 
+        DisableSsl: 
+          Ref: DisableSsl
+      Tags: 
+        Ref: Tags
+      Type: 
+        Ref: Type
+      VpcConnectionProperties: 
+        VpcConnectionArn: 
+          Ref: VpcConnectionArn

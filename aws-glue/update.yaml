@@ -1,0 +1,69 @@
+Parameters: 
+  sdCrawlerSchemaDeserializerVersion:
+    Type: String
+    Default: 1.0
+  sdcompressionType: 
+    Type: String
+    Default: none
+  sdclassification: 
+    Type: String
+    Default: csv
+  sdrecordCount: 
+    Type: String
+    Default: 948
+  sdtypeOfData: 
+    Type: String
+    Default: file
+  sdCrawlerSchemaSerializerVersion: 
+    Type: String
+    Default: 1.0
+  sdcolumnsOrdered: 
+    Type: boolean
+    Default: true
+  sdobjectCount: 
+    Type: String
+    Default: 1
+  sddelimiter: 
+    Type: String
+    Default: ,
+  sdskip.header.line.count: 
+    Type: String
+    Default: 1
+  sdaverageRecordSize:
+    Type: String
+    Default: 160
+  sdsizeKey:
+    Type: String
+    Default: 151746
+Resources:
+  createTable:
+    Type: "AWS::Glue::Table"
+    DependsOn: createdatabase
+    Properties:
+      TableInput:
+        Description: "process table"
+        TableType: "EXTERNAL_TABLE"
+        CrawlerSchemaDeserializerVersion:
+          Ref: CrawlerSchemaDeserializerVersion
+        compressionType:
+          Ref: compressionType
+        classification:
+          Ref: classification
+        recordCount:
+          Ref: recordCount
+        typeOfData:
+          Ref: typeOfData
+        CrawlerSchemaSerializerVersion: 
+          Ref: CrawlerSchemaSerializerVersion
+        columnsOrdered: 
+          Ref: columnsOrdered
+        objectCount:
+          Ref: objectCount
+        delimiter:
+          Ref: delimiter
+        skip.header.line.count:
+          Ref: skip.header.line.count
+        averageRecordSize:
+          Ref: averageRecordSize
+        sizeKey:
+          Ref: sizeKey 

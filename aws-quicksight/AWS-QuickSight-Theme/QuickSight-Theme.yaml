@@ -1,0 +1,177 @@
+Parameters:
+  AwsAccountId:
+    Description: The ID of the AWS account where you are creating an analysis.
+    Type: String
+  BaseThemeId:
+    Description: The ID of the theme that a custom theme will inherit from. All themes inherit from one of the starting themes defined by Amazon QuickSight.
+    Type: String
+  ThemeId:
+    Description: An ID for the theme that you want to create. The theme ID is unique per AWS Region in each AWS account.
+    Type: String
+  VersionDescription:
+    Description: A description of the first version of the theme that you're creating. 
+    Type: String
+  Name:
+    Description: A display name for the theme.
+    Type: String
+  Actions:
+    Description: The IAM action to grant or revoke permissions on.
+    Type: String
+  Principal:
+    Description: The Amazon Resource Name (ARN) of the principal. 
+    Type: String
+  Tags:
+    Description: A map of the key-value pairs for the resource tag or tags that you want to add to the resource.
+    Type: String
+  Colors:
+    Description: The hexadecimal codes for the colors.
+    Type: String
+  EmptyFillColor:
+    Description: The hexadecimal code of a color that applies to charts where a lack of data is highlighted.
+    Type: String
+  MinMaxGradient:
+    Description: The minimum and maximum hexadecimal codes that describe a color gradient.
+    Type: String
+  Accent:
+    Description: This color is that applies to selected states and buttons.
+    Type: String
+  AccentForeground:
+    Description: The foreground color that applies to any text or other elements that appear over the accent color.
+    Type: String
+  Danger:
+    Description: The color that applies to error messages.
+    Type: String
+  DangerForeground:
+    Description: The foreground color that applies to any text or other elements that appear over the error color.
+    Type: String
+  Dimension:
+    Description: The color that applies to the names of fields that are identified as dimensions.
+    Type: String
+  DimensionForeground:
+    Description: The foreground color that applies to any text or other elements that appear over the dimension color.
+    Type: String
+  Measure:
+    Description: The color that applies to the names of fields that are identified as measures.
+    Type: String
+  WarningForeground:
+    Description: The foreground color that applies to any text or other elements that appear over the warning color.
+    Type: String
+  Warning:
+    Description: This color that applies to warning and informational messages.
+    Type: String
+  SuccessForeground:
+    Description: The foreground color that applies to any text or other elements that appear over the success color.
+    Type: String
+  Success:
+    Description: The color that applies to success messages, for example the check mark for a successful download.
+    Type: String
+  SecondaryForeground:
+    Description: The foreground color that applies to any sheet title, sheet control text, or UI that appears over the secondary background.
+    Type: String
+  SecondaryBackground:
+    Description: The background color that applies to the sheet background and sheet controls.
+    Type: String
+  PrimaryForeground:
+    Description: The color of text and other foreground elements that appear over the primary background regions, such as grid lines, borders, table banding, icons, and so on.
+    Type: String
+  PrimaryBackground:
+    Description: The background color that applies to visuals and other high emphasis UI.
+    Type: String
+  MeasureForeground:
+    Description: The foreground color that applies to any text or other elements that appear over the measure color.
+    Type: String
+  FontFamily:
+    Description: Not currently supported by AWS CloudFormation.
+    Type: String
+  BorderShow:
+    Description: The option to enable display of borders for visuals.
+    Type: boolean
+  GutterShow:
+    Description: This Boolean value controls whether to display a gutter space between sheet tiles.
+    Type: boolean
+  MarginShow:
+    Description: This Boolean value controls whether to display sheet margins.
+    Type: boolean
+Resources:
+  QuickSightTheme:
+    Type: AWS::QuickSight::Theme
+    Properties: 
+      AwsAccountId: 
+        Ref: AwsAccountId
+      BaseThemeId: 
+        Ref: BaseThemeId
+      Configuration: 
+      DataColorPalette: 
+        Colors: 
+          Ref: Colors
+        EmptyFillColor: 
+          Ref: EmptyFillColor
+        MinMaxGradient: 
+          Ref: MinMaxGradient
+      Sheet: 
+        Tile: 
+          Border: 
+            Show: 
+              Ref: BorderShow
+        TileLayout: 
+          Gutter: 
+            Show: 
+              Ref: GutterShow
+          Margin: 
+            Show: 
+              Ref: MarginShow
+      Typography: 
+        FontFamilies: 
+          FontFamily: 
+            Ref: FontFamily
+      UIColorPalette: 
+        Accent: 
+          Ref: Accent
+        AccentForeground: 
+          Ref: AccentForeground
+        Danger: 
+          Ref: Danger
+        DangerForeground: 
+          Ref: DangerForeground
+        Dimension: 
+          Ref: Dimension
+        DimensionForeground: 
+          Ref: DimensionForeground
+        Measure: 
+          Ref: Measure
+        MeasureForeground: 
+          Ref: MeasureForeground
+        PrimaryBackground: 
+          Ref: PrimaryBackground
+        PrimaryForeground: 
+          Ref: PrimaryForeground
+        SecondaryBackground: 
+          Ref: SecondaryBackground
+        SecondaryForeground: 
+          Ref: SecondaryForeground
+        Success: 
+          Ref: Success
+        SuccessForeground: 
+          Ref: SuccessForeground
+        Warning: 
+          Ref: Warning
+        WarningForeground: 
+          Ref: WarningForeground
+      Name: 
+        Ref: Name
+      Permissions: 
+        Actions: 
+          Ref: Actions
+        Principal: 
+          Ref: Principal
+      Tags: 
+        Ref: Tags
+      ThemeId: 
+        Ref: ThemeId
+      VersionDescription: 
+        Ref: VersionDescription
+Outputs:
+  BaseThemeId:
+    Description: The ID of the theme that a custom theme will inherit from. All themes inherit from one of the starting themes defined by Amazon QuickSight.
+    Value:
+      Ref: QuickSightTheme

@@ -1,0 +1,444 @@
+# EFS Backup Solution
+#
+# template for efs-backup-solution 'Restore'
+# **DO NOT DELETE**
+#
+# author: aws-solutions-builder@
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: (SO0031R) - EFS-to-EFS Backup Solution template. Version v1.5
+
+Parameters:
+  # Source EFS on which restore will be performed
+  SrcEFS:
+    Description: Source EFS Id
+    Type: String
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # Backup EFS from where restore will be performed
+  DstEFS:
+    Description: Backup EFS Id
+    Type: String
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # Interval tag which you want to restore
+  IntervalTag:
+    Description: Interval label for backup which you want to restore
+    Type: String
+    Default: daily
+    AllowedValues:
+      - daily
+      - weekly
+      - monthly
+
+  # Backup Number that you want to restore
+  BackupNum:
+    Description: Backup number you want to restore, 0 being most recent
+    Type: Number
+    Default: 0
+
+  # Folder identifier for backup copy to be restored
+  FolderLabel:
+    Description: Folder on destination efs where backups reside
+    Type: String
+    Default: efs-backup
+
+  # Source EFS Prefix where you want files to be restored
+  RestorePrefix:
+    Description: Source prefix for restore
+    Type: String
+    Default: '/'
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # Sub directory that you want to restore
+  RestoreSubDir:
+    Description: Sub directory for restore, eg. /dir_x/; must have trailing '/'.  Leave default if you want entire backup to be restored.
+    Type: String
+    Default: '/'
+    AllowedPattern: (.+)*/
+    ConstraintDescription: must have trailing '/'
+
+  # VPC where the source/destination EFS resides
+  VpcId:
+    Description: VPC where the source/destination EFS mount targets reside
+    Type: AWS::EC2::VPC::Id
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # List of SubnetIDs for EC2, must be same AZ as of EFS Mount Targets (Choose 2)
+  Subnets:
+    Description: List of SubnetIDs for EC2, must be same AZ as of EFS Mount Targets (Choose 2).  Must specify subnets in different AZs.
+    Type: List<AWS::EC2::Subnet::Id>
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  SecurityGroupId:
+    Description: The ID of an existing EC2 SecurityGroup in your Virtual Private Cloud (VPC), which should provide access to your existing EFS
+    Type: AWS::EC2::SecurityGroup::Id
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # Bucket where restore logs will be saved
+  RestoreLogBucket:
+    Description: Bucket to store restore logs (use the same bucket as Backup)
+    Type: String
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # Email for restore notifications
+  Email:
+    Description: Email for restore notifications
+    Type: String
+    AllowedPattern: .+
+    ConstraintDescription: cannot be blank
+
+  # CW Dashboard
+  Dashboard:
+    Description: Do you want dashboard for your metrics?
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Default: "Yes"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Restore Configuration
+        Parameters:
+          - SrcEFS
+          - DstEFS
+          - IntervalTag
+          - BackupNum
+          - FolderLabel
+          - RestorePrefix
+          - RestoreSubDir
+          - RestoreLogBucket
+      - Label:
+          default: EC2 Configuration
+        Parameters:
+          - VpcId
+          - Subnets
+          - SecurityGroupId
+      - Label:
+          default: Notification & Dashboard
+        Parameters:
+          - Email
+          - Dashboard
+    ParameterLabels:
+      IntervalTag:
+        default: Interval Label
+      DstEFS:
+        default: Backup EFS
+      Subnets:
+        default: Subnet IDs
+      SrcEFS:
+        default: Source EFS
+      BackupNum:
+        default: Backup Number
+      FolderLabel:
+        default: Folder Label
+      RestorePrefix:
+        default: Restore Prefix
+      RestoreSubDir:
+        default: Restore Subdirectory
+      VpcId:
+        default: VPC ID
+      SecurityGroupId:
+        default: Security Group ID
+      RestoreLogBucket:
+        default: Restore Log Bucket
+
+Mappings:
+  Map:
+    send-data: {"SendAnonymousData": "Yes"}
+    c5.xlarge: {"Arch":"HVM64"}
+    us-east-1: {"InstanceSize":"c5.xlarge"}
+    us-east-2: {"InstanceSize":"c5.xlarge"}
+    us-west-1: {"InstanceSize":"c5.xlarge"}
+    us-west-2: {"InstanceSize":"c5.xlarge"}
+    ca-central-1: {"InstanceSize":"c5.xlarge"}
+    eu-west-1: {"InstanceSize":"c5.xlarge"}
+    eu-central-1: {"InstanceSize":"c5.xlarge"}
+    eu-west-2: {"InstanceSize":"c5.xlarge"}
+    ap-southeast-1: {"InstanceSize":"c5.xlarge"}
+    ap-southeast-2: {"InstanceSize":"c5.xlarge"}
+    ap-northeast-1: {"InstanceSize":"c5.xlarge"}
+    ap-northeast-2: {"InstanceSize":"c5.xlarge"}
+    ap-south-1: {"InstanceSize":"c5.xlarge"}
+    sa-east-1: {"InstanceSize":"c5.xlarge"}
+  SourceCode:
+    General:
+      S3Bucket: "solutions"
+      KeyPrefix: "efs-backup/v1.5"
+
+Conditions:
+  DashboardOpt: !Equals [ !Ref Dashboard, "Yes" ]
+
+Resources:
+  #
+  # EFS resources
+  # [EFSSecurityGroup, EFSIngressRule, RestoreInstanceLaunchConfig, RestoreAutoScalingGroup]
+  #
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F1000
+            reason: "allowing all egress traffic"
+    Properties:
+      VpcId: !Sub ${VpcId}
+      GroupDescription: !Sub SG for EFS backup solution ${AWS::StackName}
+
+  EFSIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W36
+            reason: "adding description causes replace during CFN update, causing a stack creation error"
+          - id: W42
+            reason: Allowing ICMP within the same security group only
+    Properties:
+      FromPort: -1
+      GroupId: !Sub ${EFSSecurityGroup}
+      IpProtocol: -1
+      SourceSecurityGroupId: !Sub ${EFSSecurityGroup}
+      ToPort: -1
+
+  RestoreInstanceLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !GetAtt AMIInfo.Id
+      SecurityGroups:
+        - !Sub ${EFSSecurityGroup}
+        - !Ref SecurityGroupId
+      InstanceType: !FindInMap [Map, !Ref "AWS::Region", "InstanceSize"]
+      IamInstanceProfile: !Sub ${InstanceProfile}
+      UserData:
+        # download and run efs-restore script
+        # 12/28/2018 - EFS-21432 - adding retries for downloads
+          Fn::Base64: !Sub
+            - |
+              #!/bin/bash
+              # V4488716 - 08/03/2018 - Support custom DHCP option
+              # https://github.com/awslabs/efs-backup/issues/1
+              cat <<EOT | sudo tee /etc/resolv.conf
+              search amazonaws.com
+              nameserver 169.254.169.253
+              EOT
+
+              curl --connect-timeout 5 --speed-time 5 --retry 10  --retry-delay 5 https://s3.${AWS::Region}.amazonaws.com/${S3Bucket}-${AWS::Region}/${KeyPrefix}/efs-ec2-restore.sh -o /home/ec2-user/efs-ec2-restore.sh
+              curl --connect-timeout 5 --speed-time 5 --retry 10  --retry-delay 5 https://s3.${AWS::Region}.amazonaws.com/${S3Bucket}-${AWS::Region}/${KeyPrefix}/efs-restore-fpsync.sh -o /home/ec2-user/efs-restore-fpsync.sh
+
+              chmod a+x /home/ec2-user/efs-ec2-restore.sh
+              chmod a+x /home/ec2-user/efs-restore-fpsync.sh
+
+              /home/ec2-user/efs-ec2-restore.sh ${SrcEFS} ${DstEFS} ${IntervalTag} ${BackupNum} ${FolderLabel} ${RestorePrefix} ${RestoreSubDir} ${RestoreLogBucket} ${SNSTopic}
+            - S3Bucket: !FindInMap ["SourceCode", "General", "S3Bucket"]
+              KeyPrefix: !FindInMap ["SourceCode", "General", "KeyPrefix"]
+
+  RestoreAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: !Ref Subnets
+      LaunchConfigurationName: !Sub ${RestoreInstanceLaunchConfig}
+      MinSize: 0
+      DesiredCapacity: 1
+      MaxSize: 1
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-instance
+          PropagateAtLaunch : true
+
+
+  #
+  # IAM resources
+  # [EC2Role, EC2RolePolicies, InstanceProfile]
+  #
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+
+  EC2RolePolicies:
+    Type: AWS::IAM::Policy
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W12
+            reason: "resource level permission not allowed"
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-${AWS::Region}
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - autoscaling:SetDesiredCapacity
+          Resource:
+          - !Sub arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${RestoreAutoScalingGroup}
+          - !Sub arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${RestoreInstanceLaunchConfig}
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          Resource: !Sub arn:aws:s3:::${RestoreLogBucket}/*
+        - Effect: Allow
+          Action:
+          - ec2:DescribeTags
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - sns:Publish
+          Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}
+      Roles:
+      - !Sub ${EC2Role}
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - !Sub ${EC2Role}
+
+  #
+  # Helper Resources
+  # [HelperRole, AMIInfoFunction, AMIInfo]
+  #
+  HelperRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "resource level permission not allowed"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: Helper_Permissions
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*
+          - Effect: Allow
+            Action:
+            - ec2:DescribeImages
+            Resource: "*"
+
+  AMIInfoFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Join ["-", [!FindInMap ["SourceCode", "General", "S3Bucket"], !Ref "AWS::Region"]]
+        S3Key: !Join ["/", [!FindInMap ["SourceCode", "General", "KeyPrefix"], "amilookup.zip"]]
+      Handler: amilookup.handler
+      Runtime: nodejs12.x
+      Timeout: 120
+      Description: EFS Backup - This function is CloudFormation custom lambda resource that
+         looks up the latest AMI ID.
+      Role: !Sub ${HelperRole.Arn}
+
+  AMIInfo:
+    Type: Custom::AMIInfo
+    Properties:
+      ServiceToken: !GetAtt AMIInfoFunction.Arn
+      Region: !Ref "AWS::Region"
+      Architecture: !FindInMap [Map, !FindInMap [Map, !Ref "AWS::Region", "InstanceSize"], "Arch"]
+
+  SolutionHelper:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: solution-helper.lambda_handler
+      Role: !Sub ${HelperRole.Arn}
+      Description: EFS Backup - This function is a CloudFormation custom lambda resource that
+        generates UUID for each deployment.
+      Code:
+        S3Bucket: !Join ["-", [!FindInMap ["SourceCode", "General", "S3Bucket"], !Ref "AWS::Region"]]
+        S3Key: !Join ["/", [!FindInMap ["SourceCode", "General", "KeyPrefix"], "efs_to_efs_backup.zip"]]
+      Runtime: python3.8
+      Timeout: 300
+
+  CreateUniqueID:
+    Type: Custom::CreateUniqueID
+    Properties:
+      ServiceToken: !Sub ${SolutionHelper.Arn}
+      Region: !Sub ${AWS::Region}
+
+  SendAnonymousMetrics:
+    Type: Custom::SendAnonymousMetrics
+    Properties:
+      ServiceToken: !Sub ${SolutionHelper.Arn}
+      Region: !Sub ${AWS::Region}
+      SolutionId: SO0031
+      SolutionVersion: "v1.5"
+      SolutionUuid: !GetAtt CreateUniqueID.UUID
+      EventType: restore
+      SendAnonymousMetrics: !FindInMap [Map, send-data, SendAnonymousData]
+
+  #
+  # Dashboard and Notification resources
+  # [CWDashboard, SNSTopic]
+  #
+  CWDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Condition: DashboardOpt
+    Properties:
+      DashboardName: !Sub ${AWS::StackName}-${AWS::Region}
+      DashboardBody: !Sub '{"widgets":[{"type":"metric","x":0,"y":0,"width":18,"height":3,"properties":{"view":"singleValue","stacked":true,"metrics":[["AWS/EFS","BurstCreditBalance","FileSystemId","${SrcEFS}",{"stat":"Minimum"}],[".","PermittedThroughput",".","."],[".","TotalIOBytes",".",".",{"period":60,"stat":"Sum"}]],"region":"${AWS::Region}","title":"BurstCreditBalance, PermittedThroughput, TotalIOBytes - Source","period":300}},{"type":"metric","x":0,"y":3,"width":18,"height":3,"properties":{"view":"singleValue","stacked":false,"region":"${AWS::Region}","metrics":[["AWS/EFS","BurstCreditBalance","FileSystemId","${DstEFS}",{"period":60,"stat":"Average"}],[".","PermittedThroughput",".",".",{"period":60,"stat":"Average"}],[".","TotalIOBytes",".",".",{"period":60,"stat":"Sum"}]],"title":"BurstCreditBalance, PermittedThroughput, TotalIOBytes - Backup","period":300}},{"type":"text","x":18,"y":0,"width":6,"height":12,"properties":{"markdown":"\n# EFS Backup Solution \n \n Visit Solution:[LandingPage](http://aws.amazon.com/answers/infrastructure-management/efs-backup). \n A link to this dashboard: [${AWS::StackName}](#dashboards:name=${AWS::StackName}). \n"}}]}'
+
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      KmsMasterKeyId: "alias/aws/sns"
+      Subscription:
+      - Protocol: email
+        Endpoint: !Sub ${Email}
+
+Outputs:
+  SNSTopic:
+    Description: Topic for your backup notifications
+    Value: !Sub ${SNSTopic.TopicName}
+
+  DashboardView:
+    Condition: DashboardOpt
+    Description: CloudWatch Dashboard to view EFS metrics
+    Value: !Sub ${CWDashboard}
+
+  LogBucket:
+    Description: S3 bucket for your restore logs
+    Value: !Sub ${RestoreLogBucket}
+
+  AmiId:
+    Description: Ami Id vended in template
+    Value: !GetAtt AMIInfo.Id
+
+  EFSSecurityGroup:
+    Description: Restore EFS security group
+    Value: !Ref EFSSecurityGroup

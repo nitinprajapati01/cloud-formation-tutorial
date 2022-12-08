@@ -1,0 +1,134 @@
+Parameters:
+  EndpointConfigName: 
+    Description: The name of the endpoint configuration.
+    Type: String
+  KmsKeyId:
+    Description: The Amazon Resource Name (ARN) of an AWS Key Management Service key that Amazon SageMaker uses to encrypt data on the storage volume attached to the ML compute instance that hosts the endpoint.
+    Type: String
+  MaxConcurrentInvocationsPerInstance:
+    Description: The maximum number of concurrent requests sent by the SageMaker client to the model container. 
+    Type: String
+  OutputConfigKmsKeyId:
+    Description: The AWS Key Management Service (AWS KMS) key that Amazon SageMaker uses to encrypt the asynchronous inference output in Amazon S3.
+    Type: String
+  S3OutputPath:
+    Description: he Amazon S3 location to upload inference responses to.
+    Type: String
+  ErrorTopic:
+    Description: Amazon SNS topic to post a notification to when an inference fails. If no topic is provided, no notification is sent on failure.
+    Type: String
+  SuccessTopic:
+    Description: Amazon SNS topic to post a notification to when an inference completes successfully. If no topic is provided, no notification is sent on success.
+    Type: String
+  DestinationS3Uri:
+    Description: The S3 bucket where model monitor stores captured data.
+    Type: String
+  DataCaptureConfigKmsKeyId:
+    Description: The AWS Key Management Service (AWS KMS) key that Amazon SageMaker uses to encrypt the captured data at rest using Amazon S3 server-side encryption.
+    Type: String
+  InitialSamplingPercentage:
+    Description: The percentage of data to capture.
+    Type: integer
+  EnableCapture:
+    Description: Set to True to enable data capture.
+    Type: boolean
+  CsvContentTypes:
+    Description: A list of the CSV content types of the data that the endpoint captures.
+    Type: String
+  JsonContentTypes:
+    Description: A list of the JSON content types of the data that the endpoint captures.
+    Type: String
+  CaptureMode:
+    Description: Specifies whether the endpoint captures input data or output data.
+    Type: String
+  AcceleratorType:
+    Description: The size of the Elastic Inference (EI) instance to use for the production variant.
+    Type: String
+  InstanceType:
+    Description: The ML compute instance type.
+    Type: String
+  ModelName:
+    Description: The name of the model that you want to host. This is the name that you specified when creating the model.
+    Type: String
+  VariantName:
+    Description: The name of the production variant.
+    Type: String
+  InitialInstanceCount:
+    Description: Number of instances to launch initially.
+    Type: integer
+  InitialVariantWeight:
+    Description: Determines initial traffic distribution among all of the models that you specify in the endpoint configuration. 
+    Type: Double
+  MaxConcurrency:
+    Description: The maximum number of concurrent invocations your serverless endpoint can process.
+    Type: integer
+  MemorySizeInMB:
+    Description: The memory size of your serverless endpoint. Valid values are in 1 GB increments- 1024 MB, 2048 MB, 3072 MB, 4096 MB, 5120 MB, or 6144 MB.
+    Type: integer
+  Tags:
+    Description: A list of key-value pairs to apply to this resource.
+    Type: String
+Resources:
+  SagemakerEndpointConfig: 
+    Type: AWS::SageMaker::EndpointConfig
+    Properties: 
+      AsyncInferenceConfig: 
+        ClientConfig: 
+          MaxConcurrentInvocationsPerInstance: 
+            Ref: MaxConcurrentInvocationsPerInstance
+        OutputConfig: 
+          KmsKeyId: 
+            Ref: OutputConfigKmsKeyId
+          NotificationConfig: 
+            ErrorTopic: 
+              Ref: ErrorTopic
+            SuccessTopic: 
+              Ref: SuccessTopic
+          S3OutputPath: 
+            Ref: S3OutputPath
+      DataCaptureConfig: 
+        CaptureContentTypeHeader: 
+          CsvContentTypes: 
+            Ref: CsvContentTypes
+          JsonContentTypes: 
+            Ref: JsonContentTypes
+        CaptureOptions: 
+          CaptureMode: 
+            Ref: CaptureMode
+        DestinationS3Uri: 
+          Ref: DestinationS3Uri
+        EnableCapture: 
+          Ref: EnableCapture
+        InitialSamplingPercentage: 
+          Ref: InitialSamplingPercentage
+        KmsKeyId: 
+          Ref: DataCaptureConfigKmsKeyId
+      EndpointConfigName: 
+        Ref: EndpointConfigName
+      KmsKeyId: 
+        Ref: KmsKeyId
+      ProductionVariants: 
+        AcceleratorType: 
+          Ref: AcceleratorType
+        InitialInstanceCount: 
+          Ref: InitialInstanceCount
+        InitialVariantWeight: 
+          Ref: InitialVariantWeight
+        InstanceType: 
+          Ref: InstanceType
+        ModelName: 
+          Ref: ModelName
+        ServerlessConfig: 
+          MaxConcurrency: 
+            Ref: MaxConcurrency
+          MemorySizeInMB: 
+            Ref: MemorySizeInMB
+        VariantName: 
+          Ref: VariantName  
+      Tags: 
+        Ref: Tags
+Outputs:
+  EndpointConfigName:
+    Description: The name of the endpoint configuration.
+    Value:
+      Ref: SagemakerEndpointConfig

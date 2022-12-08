@@ -1,0 +1,37 @@
+Parameters:
+  Description:
+    Description: Description of the device.
+    Type: String
+  DeviceName: 
+    Description: The name of the device.
+    Type: String
+  IotThingName:
+    Description: AWS Internet of Things (IoT) object name.
+    Type: String
+  DeviceFleetName:
+    Description: The name of the fleet the device belongs to.
+    Type: String
+  Tags:
+    Description: An array of key-value pairs to apply to this resource.
+    Type: String
+Resources:
+  SagemakerDevice:
+    Type: AWS::SageMaker::Device
+    Properties: 
+      Device: 
+        Description: 
+          Ref: Description
+        DeviceName: 
+          Ref: DeviceName
+        IotThingName: 
+          Ref: IotThingName
+
+      DeviceFleetName: 
+        Ref: DeviceFleetName
+      Tags: 
+        Ref: Tags
+Outputs:
+  DeviceName:
+    Description: The name of the fleet the device belongs to.
+    Value:
+      Ref: SagemakerDevice

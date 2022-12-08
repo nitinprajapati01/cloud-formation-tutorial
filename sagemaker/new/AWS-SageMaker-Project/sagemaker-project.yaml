@@ -1,0 +1,25 @@
+Parameters:
+  ProjectDescription:
+    Description: The description of the project.
+    Type: String
+  ProjectName:
+    Description: The name of the project.
+    Type: String
+  ServiceCatalogProvisioningDetails:
+    Description: The product ID and provisioning artifact ID to provision a service catalog.
+    Type: json
+  Tags:
+    Description: A list of key-value pairs to apply to this resource.
+    Type: String
+Resources:
+  SagemakerProject:
+    Type: AWS::SageMaker::Project
+    Properties: 
+      ProjectDescription: 
+        Ref: ProjectDescription
+      ProjectName: 
+        Ref: ProjectName
+      ServiceCatalogProvisioningDetails: 
+        Ref: ServiceCatalogProvisioningDetails
+      Tags: 
+        Ref: Tags

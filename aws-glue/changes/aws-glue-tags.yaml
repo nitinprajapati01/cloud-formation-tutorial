@@ -1,0 +1,444 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template sets up sample AWS Glue resources to be orchestrated by AWS Step Functions.
+Parameters:
+  databasename:
+    Type: String
+    MinLength: "4"
+    Default: "awsglue"
+    Description: "Name of the AWS Glue database to contain this CloudFormation template's tables."
+  tablename:
+    Type: String
+    MinLength: "4"
+    Default: "awsglue_table"
+    Description: "Name of the data table in AWS Glue."
+  ETLScriptsPrefix:
+    Type: String
+    MinLength: "1"
+    Description: "Location of the Glue job ETL scripts in S3."
+  ETLOutputPrefix:
+    Type: String
+    MinLength: "1"
+    Description: "Name of the S3 output path to which this CloudFormation template's AWS Glue jobs are going to write ETL output."
+  DataBucketName:
+    Type: String
+    MinLength: "1"
+    Description: "Name of the S3 bucket in which the source data will be uploaded. Bucket is created by this CFT."
+  ArtifactBucketName:
+    Type: String
+    MinLength: "1"
+    Description: "Name of the S3 bucket in which the ETL scripts reside. Bucket is NOT created by this CFT."
+  GlueName:
+    Type: String
+    MinLength: "1"
+    Description: "Name of the Glue for tag Key."
+  GlueNameValue:
+    Type: String
+    MinLength: "1"
+    Description: "Value of the Glue for tag key GlueName."
+  ETLScriptName:
+    Type: String
+    Description: "ETL Script Name"
+  pContainerImageName:
+    Type: String
+    AllowedPattern: >-
+      ([a-z0-9]{0,}([a-z0-9][/]){0,}([a-z0-9][a-z0-9-]{0,}){0,}){0,}[a-z0-9]$
+    Description: |+
+      Container Image Name (without a preceeding /). Application will be prepended.
+      The Image name may contain up to 63 characters. Image names may contain lowercase alphanumeric and dashes.
+    Default:
+      "change-this-value"
+  pSystemOwner:
+    Type: String
+    Description: |+
+      Enter the Active Directory ID of the system owner If you are not sure then usethe requestor from the account request spreadsheet.
+      It cannot be more than 20 char, and cannot include [] ; : | = + * ? < > / \ , @ or non printable characters
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+  pApplicationName:
+    Type: String
+    Description: Enter the application name. if you are not sure then use the value from the project name in Gitlab.
+    ConstraintDescription: The application name must be between 1 and 8 characters in length
+    AllowedPattern: >-
+      (^[a-zA-Z0-9][a-zA-Z0-9._()-]{0,7}$)
+    MinLength: 1
+    MaxLength: 8
+  pPurpose:
+    Type: String
+    Description: Select the general purpose of the resource
+    ConstraintDescription: The resource purpose must be an allowed value
+    AllowedValues:
+      - wws
+      - appl
+      - daba
+      - devo
+      - netw
+      - secr
+      - comp
+      - dago
+    Default: appl
+  pResourceOwner:
+    Type: String
+    Description: Enter the Active Directory group or user that is the resource owner of this solution.
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+  pResourceOwner:
+    Type: String
+    Description: Select the most exposure that this solution isexposed to
+    ConstraintDescription: The resource exposure must be an allowed value
+    AllowedValues:
+      - Public
+      - Partner
+      - Saas
+      - OtherSecCloud
+      - AwsGovCloud
+      - SecOnPremise
+    Default: SecOnPremise 
+  pResourceSensitivity:
+    Type: String
+    Description: Select the sensitivity of resource in this solution
+    ConstraintDescription: The resource sensitivity must be an allowed value
+    AllowedValues:
+      - Red
+      - Amber
+      - Green
+    Default: Amber
+  pDataSteward:
+    Type: String
+    Description: Enter the Active Directory group or user that is the data steward of this solution.
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+  pDataSensitivity:
+    Type: String
+    Description: Select the data sensitivity of data hosted by this solution
+    ConstraintDescription: The data sensitivity must be an allowed value
+    AllowedValues:
+      - Red
+      - Amber
+      - Green
+    Default: Amber
+Mappings:
+  NameTagPartitionToPartitionAbbreviatoin:
+    aws-us-gov:
+      PartitionAbbr: g
+    aws:
+      PartitionAbbr: c
+  NameTagRegionToRegionAbbreviatoin:
+    us-east-1:
+      RegionAbbr: use1
+    us-east-2:
+      RegionAbbr: use2
+    us-west-1:
+      RegionAbbr: usw1
+    us-west-2:
+      RegionAbbr: usw2
+Resources:
+  ### AWS GLUE RESOURCES ###
+  AWSGlueJobRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - glue.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: S3Accesspolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                  - "s3:DeleteObject"
+                Resource:
+                  - !Sub "arn:aws:s3:::${DataBucketName}"
+                  - !Sub "arn:aws:s3:::${DataBucketName}/*"
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}"
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+        - PolicyName: S3AccessReadPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                Resource:
+                  - !Sub "arn:aws:s3:*"
+                  - !Sub "arn:aws:s3:*/*"
+        - PolicyName: KmsAccessPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                   "Action": [
+                      "kms:Encrypt",
+                      "kms:Decrypt",
+                      "kms:ReEncrypt*",
+                      "kms:GenerateDataKey*",
+                      "kms:DescribeKey"
+                    ]
+                Resource:
+                  - !Sub "arn:aws:kms:AWS::Region:AWS::AccountId:key/S3General"
+                  - !Sub "arn:aws:kms:AWS::Region:AWS::AccountId:key/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Path: "/"
+  createdatabase:
+    Type: "AWS::Glue::Database"
+    Properties:
+      DatabaseInput:
+        Description: "database Process"
+        Name: !Sub "resolve:ssm:/account/config/BusinessLowercase:1"
+      CatalogId: !Ref AWS::AccountId
+      Tags:
+        Key: "Databse Name"
+        Value:
+          Ref: databasename
+        - key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${cName}
+              - Partition:  !FindInMap
+                  - NameTagPartitionToPartitionAbbreviatoin
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviatoin
+                  - !Ref "AWS:Region"
+                  - RegionAbbr
+                LifeCycle:  !Sub "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"  
+                DivisionName: !Sub "{{resolve:ssm:/account/config/BuisnessLowercase:1}}"
+                Purpose: !Ref pPurpose 
+                ServiceType: repository
+                cName: !Ref pContainerImageName 
+        - Key: LifeCycle
+          Value: !Sub "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner 
+        - Key: ApplicationName
+          Value: !Ref pApplicationName 
+        - Key: Business
+          Value: !Sub "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: !Sub "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: !Sub "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward 
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity 
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner 
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity 
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure 
+  createTable:
+    Type: "AWS::Glue::Table"
+    DependsOn: createdatabase
+    Properties:
+      TableInput:
+        Description: "process table "
+        TableType: "EXTERNAL_TABLE"
+        Parameters: {
+                    "CrawlerSchemaDeserializerVersion": "1.0",
+                    "compressionType": "none",
+                    "classification": "csv",
+                    "recordCount": "948",
+                    "typeOfData": "file",
+                    "CrawlerSchemaSerializerVersion": "1.0",
+                    "columnsOrdered": "true",
+                    "objectCount": "1",
+                    "delimiter": ",",
+                    "skip.header.line.count": "1",
+                    "averageRecordSize": "160",
+                    "sizeKey": "151746"
+        }
+        StorageDescriptor:
+          StoredAsSubDirectories: False
+          Parameters: {
+                    "CrawlerSchemaDeserializerVersion": "1.0",
+                    "compressionType": "none",
+                    "classification": "csv",
+                    "recordCount": "948",
+                    "typeOfData": "file",
+                    "CrawlerSchemaSerializerVersion": "1.0",
+                    "columnsOrdered": "true",
+                    "objectCount": "1",
+                    "delimiter": ",",
+                    "skip.header.line.count": "1",
+                    "averageRecordSize": "160",
+                    "sizeKey": "151746"
+          }
+          InputFormat: "org.apache.hadoop.mapred.TextInputFormat"
+          OutputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+          Columns:
+            - Type: string
+              Name: date
+            - Type: bigint
+              Name: new visitors seo
+            - Type: bigint
+              Name: new visitors cpc
+            - Type: bigint
+              Name: new visitors social media
+            - Type: bigint
+              Name: return visitors
+            - Type: bigint
+              Name: twitter mentions
+            - Type: bigint
+              Name: twitter follower adds
+            - Type: bigint
+              Name: twitter followers cumulative
+            - Type: bigint
+              Name: mailing list adds
+            - Type: bigint
+              Name: mailing list cumulative
+            - Type: bigint
+              Name: website pageviews
+            - Type: bigint
+              Name: website visits
+            - Type: bigint
+              Name: website unique visits
+            - Type: bigint
+              Name: mobile uniques
+            - Type: bigint
+              Name: tablet uniques
+            - Type: bigint
+              Name: desktop uniques
+            - Type: bigint
+              Name: free sign up
+            - Type: bigint
+              Name: paid conversion
+            - Type: string
+              Name: events
+          SerdeInfo:
+            Parameters: {
+                        "field.delim": ","
+            }
+            SerializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+          Compressed: False
+          Location: !Sub "s3://${DataBucketName}/resolve:ssm:/account/config/BusinessLowercase:1/ApplicationNameLC:1/${databasename}/${tablename}/"
+        Retention: 0
+        Name: !Sub "resolve:ssm:/account/config/BusinessLowercase:1/ApplicationNameLC:1/${databasename}/${tablename}"
+      DatabaseName: !Ref databasename
+      CatalogId: !Ref AWS::AccountId
+      Tags:
+        Key: "Table Name"
+        Value:
+          Ref: tablename
+        - key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${cName}
+              - Partition:  !FindInMap
+                  - NameTagPartitionToPartitionAbbreviatoin
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviatoin
+                  - !Ref "AWS:Region"
+                  - RegionAbbr
+                LifeCycle:  !Sub "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"  
+                DivisionName: !Sub "{{resolve:ssm:/account/config/BuisnessLowercase:1}}"
+                Purpose: !Ref pPurpose 
+                ServiceType: repository
+                cName: !Ref pContainerImageName 
+        - Key: LifeCycle
+          Value: !Sub "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner 
+        - Key: ApplicationName
+          Value: !Ref pApplicationName 
+        - Key: Business
+          Value: !Sub "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: !Sub "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: !Sub "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward 
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity 
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner 
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity 
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure 
+  ProcessDataJob:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !Ref AWSGlueJobRole
+      Name: "ProcessData"
+      Command: {
+        "Name" : "glueetl",
+        "ScriptLocation": !Sub "s3://${ArtifactBucketName}/resolve:ssm:/account/config/BusinessLowercase:1/ApplicationNameLC:1/${ETLScriptsPrefix}/${ETLScriptName}"  
+      }
+      DefaultArguments: {
+          "--database_name" : !Ref databasename,
+          "--table_name" : !Ref tablename,
+          "--s3_output_path": !Sub "s3://${DataBucketName}/resolve:ssm:/account/config/BusinessLowercase:1/ApplicationNameLC:1/${ETLOutputPrefix}/tmp/ProcessDataJob"
+      }
+      MaxRetries: 0
+      Description: "Process data."
+      AllocatedCapacity: 5
+      Tags:
+        Key:
+          Ref: GlueName
+        Value:
+          Ref: GlueNameValue
+        - key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${cName}
+              - Partition:  !FindInMap
+                  - NameTagPartitionToPartitionAbbreviatoin
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviatoin
+                  - !Ref "AWS:Region"
+                  - RegionAbbr
+                LifeCycle:  !Sub "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"  
+                DivisionName: !Sub "{{resolve:ssm:/account/config/BuisnessLowercase:1}}"
+                Purpose: !Ref pPurpose 
+                ServiceType: repository
+                cName: !Ref pContainerImageName 
+        - Key: LifeCycle
+          Value: !Sub "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner 
+        - Key: ApplicationName
+          Value: !Ref pApplicationName 
+        - Key: Business
+          Value: !Sub "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: !Sub "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: !Sub "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward 
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity 
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner 
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity 
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure 
+Outputs:
+  ETLScriptName:
+    Description: "ETL Script Name"
+    Value: !Ref 'ProcessDataJob'

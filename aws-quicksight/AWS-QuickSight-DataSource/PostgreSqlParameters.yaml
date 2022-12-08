@@ -1,0 +1,24 @@
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AwsAccountId: '813500233683'
+      DataSourceParameters:
+        PostgreSqlParameters:
+          Database: 'mydata'
+          Host: 'mydata.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+          Port: 3306
+      Credentials: 
+        # CopySourceArn: 
+        #   Ref: CopySourceArn
+        CredentialPair: 
+          AlternateDataSourceParameters: 
+            - PostgreSqlParameters: 
+                Database: 'mydata'
+                Host: 'mydata.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+                Port: 3306
+          Password: 'Welcome123'
+          Username: 'admin'
+      DataSourceId: '127257363'
+      Name: 'mydatasource'
+      Type: 'POSTGRESQL'

@@ -1,0 +1,34 @@
+# Parameters:
+#   CopySourceArn:
+#     Description: "The Amazon Resource Name (ARN) of a data source that has the credential pair that you want to use."
+#     Type: String
+#     AllowedPattern: >-
+#       ^arn:[-a-z0-9]*:quicksight:[-a-z0-9]*:[0-9]{12}:datasource/.+
+#     Default: "datasetmyarn"
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AwsAccountId: '813500233683'
+      Credentials: 
+        # CopySourceArn: 
+        #   Ref: CopySourceArn
+        CredentialPair: 
+          AlternateDataSourceParameters: 
+            - OracleParameters: 
+                Database: 'ORCL'
+                Host: 'testdb.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+                Port: '1521'
+          Password: 'Welcome123'
+          Username: 'admin'
+      DataSourceId: 'd736gd8'
+      Name: 'mydatasource'
+      # Permissions: 
+      #   - ResourcePermission
+      # SslProperties: 
+      #   SslProperties
+      # Tags: 
+      #   - Tag
+      Type: 'ORACLE'
+      # VpcConnectionProperties: 
+      #   VpcConnectionArn: 'convpc'

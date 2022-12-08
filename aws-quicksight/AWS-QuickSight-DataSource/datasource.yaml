@@ -1,0 +1,43 @@
+Parameters:
+  OracleParametersDatabase:
+    Description: databse
+    Type: String
+  OracleParametersHost:
+    Description: host
+    Type: String
+  OracleParametersPort:
+    Description: port 
+    Type: String  
+  AwsAccountId:
+    Description: The AWS account ID.
+    Type: String
+  DataSourceId:
+    Description: An ID for the data source. This ID is unique per AWS Region for each AWS account.
+    Type: String
+  Name:
+    Description: A display name for the data source.
+    Type: String
+  Type:
+    Description: The type of the data source. To return a list of all data sources, use ListDataSources.
+    Type: String
+    AllowedValues: [ADOBE_ANALYTICS , AMAZON_ELASTICSEARCH , AMAZON_OPENSEARCH , ATHENA , AURORA , AURORA_POSTGRESQL , AWS_IOT_ANALYTICS , EXASOL , GITHUB , JIRA , MARIADB , MYSQL , ORACLE , POSTGRESQL , PRESTO , REDSHIFT , S3 , SALESFORCE , SERVICENOW , SNOWFLAKE , SPARK , SQLSERVER , TERADATA , TIMESTREAM , TWITTER]  
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      DataSourceParameters:
+        OracleParameters: 
+          Database: 
+            Ref: OracleParametersDatabase
+          Host: 
+            Ref: OracleParametersHost
+          Port: 
+            Ref: OracleParametersPort
+      AwsAccountId: 
+        Ref: AwsAccountId
+      DataSourceId: 
+        Ref: DataSourceId
+      Name: 
+        Ref: Name
+      Type: 
+        Ref: Type

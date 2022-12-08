@@ -1,0 +1,48 @@
+# Resources:
+#   QuickSightDataSource:
+#     Type: AWS::QuickSight::DataSource
+#     Properties: 
+#       AwsAccountId: '813500233683'
+#       DataSourceParameters:
+#         OracleParameters:
+#           Database: 'testdb'
+#           Host: 'testdb.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+#           Port: 1521
+#       Credentials: 
+#         # CopySourceArn: 
+#         #   Ref: CopySourceArn
+#         CredentialPair: 
+#           AlternateDataSourceParameters: 
+#             - OracleParameters: 
+#                 Database: 'testdb'
+#                 Host: 'testdb.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+#                 Port: 1521
+#           Password: 'Welcome123'
+#           Username: 'admin'
+#       DataSourceId: '123456789'
+#       Name: 'mydatasource'
+#       Type: 'ORACLE'
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AwsAccountId: '813500233683'
+      DataSourceParameters:
+        MySqlParameters:
+          Database: 'mydata'
+          Host: 'mydata.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+          Port: 3306
+      Credentials: 
+        # CopySourceArn: 
+        #   Ref: CopySourceArn
+        CredentialPair: 
+          AlternateDataSourceParameters: 
+            - MySqlParameters: 
+                Database: 'mydata'
+                Host: 'mydata.ceakj1ta8vkh.us-east-1.rds.amazonaws.com'
+                Port: 3306
+          Password: 'Welcome123'
+          Username: 'admin'
+      DataSourceId: '123457363'
+      Name: 'mydatasource'
+      Type: 'MYSQL'

@@ -1,0 +1,272 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template sets up sample AWS Glue resources to be orchestrated by AWS Step Functions.
+
+Parameters:
+  databasename:
+    Type: String
+    MinLength: "4"
+    Default: "awsglue"
+    Description: "Name of the AWS Glue database to contain this CloudFormation template's tables."
+  tablename:
+    Type: String
+    MinLength: "4"
+    Default: "awsglue_table"
+    Description: "Name of the data table in AWS Glue."
+  ETLScriptsPrefix:
+    Type: String
+    MinLength: "1"
+    Default: "glueETLScripts"
+    Description: "Location of the Glue job ETL scripts in S3."
+  ETLOutputPrefix:
+    Type: String
+    MinLength: "1"
+    Default: "glueETLOutput"
+    Description: "Name of the S3 output path to which this CloudFormation template's AWS Glue jobs are going to write ETL output."
+  DataBucketName:
+    Type: String
+    MinLength: "1"
+    Default: "glueDataBucket"
+    Description: "Name of the S3 bucket in which the source data will be uploaded. Bucket is created by this CFT."
+  ArtifactBucketName:
+    Type: String
+    MinLength: "1"
+    Default: "glueArtifactBucket"
+    Description: "Name of the S3 bucket in which the ETL scripts reside. Bucket is NOT created by this CFT."
+  CrawlerSchemaDeserializerVersion: 
+    Type: String
+    Default: "1.0"
+  compressionType: 
+    Type: String
+    Default: "none"
+  classification: 
+    Type: String
+    Default: "csv"
+  recordCount: 
+    Type: String
+    Default: "948"
+  typeOfData: 
+    Type: String
+    Default: "file"
+  CrawlerSchemaSerializerVersion: 
+    Type: String
+    Default: "1.0"
+  columnsOrdered: 
+    AllowedValues: [true, false]
+    Type: String
+    Default: "true"
+  objectCount: 
+    Type: String
+    Default: 1
+  delimiter: 
+    Type: String
+    Default: ","
+  skipheaderlinecount: 
+    Type: String
+    Default: "1"
+  averageRecordSize:
+    Type: String
+    Default: "160"
+  sizeKey:
+    Type: String
+    Default: "151746"
+  StoredAsSubDirectories:
+    AllowedValues: [true, false]
+    Default: false
+    Type: String
+  sdCrawlerSchemaDeserializerVersion: 
+    Type: String
+    Default: "1.0"
+  sdcompressionType: 
+    Type: String
+    Default: "none"
+  sdclassification: 
+    Type: String
+    Default: "csv"
+  sdrecordCount: 
+    Type: String
+    Default: "948"
+  sdtypeOfData: 
+    Type: String
+    Default: "file"
+  sdCrawlerSchemaSerializerVersion: 
+    Type: String
+    Default: "1.0"
+  sdcolumnsOrdered: 
+    AllowedValues: [true, false]
+    Type: String
+    Default: "true"
+  sdobjectCount: 
+    Type: String
+    Default: "1"
+  sddelimiter: 
+    Type: String
+    Default: ","
+  sdskipheaderlinecount: 
+    Type: String
+    Default: "1"
+  sdaverageRecordSize:
+    Type: String
+    Default: "160"
+  sdsizeKey:
+    Type: String
+    Default: "151746"
+Resources:
+
+  ### AWS GLUE RESOURCES ###
+  AWSGlueJobRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - glue.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Path: "/"
+  createdatabase:
+    Type: "AWS::Glue::Database"
+    Properties:
+      DatabaseInput:
+        Description: "database Process"
+        Name: !Ref databasename
+      CatalogId: !Ref AWS::AccountId
+  createTable:
+    Type: "AWS::Glue::Table"
+    DependsOn: createdatabase
+    Properties:
+      Description: "process table"
+      TableType: "EXTERNAL_TABLE"
+      CrawlerSchemaDeserializerVersion:
+        Ref: CrawlerSchemaDeserializerVersion
+      compressionType:
+        Ref: compressionType
+      classification:
+        Ref: classification
+      recordCount:
+        Ref: recordCount
+      typeOfData:
+        Ref: typeOfData
+      CrawlerSchemaSerializerVersion: 
+        Ref: CrawlerSchemaSerializerVersion
+      columnsOrdered: 
+        Ref: columnsOrdered
+      objectCount:
+        Ref: objectCount
+      delimiter:
+        Ref: delimiter
+      skipheaderlinecount:
+        Ref: skipheaderlinecount
+      averageRecordSize:
+        Ref: averageRecordSize
+      sizeKey:
+        Ref: sizeKey
+      StorageDescriptor:
+        StoredAsSubDirectories: 
+          Ref: StoredAsSubDirectories
+        sdCrawlerSchemaDeserializerVersion:
+          Ref: CrawlerSchemaDeserializerVersion
+        sdcompressionType:
+          Ref: compressionType
+        sdclassification:
+          Ref: classification
+        sdrecordCount:
+          Ref: recordCount
+        sdtypeOfData:
+          Ref: typeOfData
+        sdCrawlerSchemaSerializerVersion: 
+          Ref: CrawlerSchemaSerializerVersion
+        sdcolumnsOrdered: 
+          Ref: columnsOrdered
+        sdobjectCount:
+          Ref: objectCount
+        sddelimiter:
+          Ref: delimiter
+        sdskipheaderlinecount:
+          Ref: skipheaderlinecount
+        sdaverageRecordSize:
+          Ref: averageRecordSize
+        sdsizeKey:
+          Ref: sizeKey
+        InputFormat: "org.apache.hadoop.mapred.TextInputFormat"
+        OutputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+        Columns:
+          - Type: string
+            Name: date
+          - Type: bigint
+            Name: new visitors seo
+          - Type: bigint
+            Name: new visitors cpc
+          - Type: bigint
+            Name: new visitors social media
+          - Type: bigint
+            Name: return visitors
+          - Type: bigint
+            Name: twitter mentions
+          - Type: bigint
+            Name: twitter follower adds
+          - Type: bigint
+            Name: twitter followers cumulative
+          - Type: bigint
+            Name: mailing list adds
+          - Type: bigint
+            Name: mailing list cumulative
+          - Type: bigint
+            Name: website pageviews
+          - Type: bigint
+            Name: website visits
+          - Type: bigint
+            Name: website unique visits
+          - Type: bigint
+            Name: mobile uniques
+          - Type: bigint
+            Name: tablet uniques
+          - Type: bigint
+            Name: desktop uniques
+          - Type: bigint
+            Name: free sign up
+          - Type: bigint
+            Name: paid conversion
+          - Type: string
+            Name: events
+        SerdeInfo:
+          Parameters: {
+                      "field.delim": ","
+          }
+          SerializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+        Compressed: False
+        Location: !Sub "s3://${DataBucketName}/table/"
+      Retention: 0
+      Name: !Ref tablename
+      DatabaseName: !Ref databasename
+      CatalogId: !Ref AWS::AccountId
+  ProcessDataJob:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !Ref AWSGlueJobRole
+      Name: "ProcessData"
+      Command: {
+        "Name" : "glueetl",
+        "ScriptLocation": !Sub "s3://${ArtifactBucketName}/${ETLScriptsPrefix}/process_data.py"
+      }
+      DefaultArguments: {
+          "--database_name" : !Ref databasename,
+          "--table_name" : !Ref tablename,
+          "--s3_output_path": !Sub "s3://${DataBucketName}/${ETLOutputPrefix}/tmp/ProcessDataJob"
+      }
+      MaxRetries: 0
+      Description: "Process data."
+      AllocatedCapacity: 5

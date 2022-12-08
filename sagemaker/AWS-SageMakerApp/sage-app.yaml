@@ -1,0 +1,52 @@
+Parameters:
+  AppName:
+    Description: The name of the app.
+    Type: String
+  AppType: 
+    Description: The type of app.
+    Type: String
+  DomainId:
+    Description: The domain ID.
+    Type: String
+  ResourceSpec:
+    Description: Specifies the ARNs of a SageMaker image and SageMaker image version, and the instance type that the version runs on.
+    Type: String
+  Tags:
+    Description: An array of key-value pairs to apply to this resource.
+    Type: String
+  UserProfileName:
+    Description: The user profile name.
+    Type: String
+Resources:
+  SagemakerApp:
+    Type: AWS::SageMaker::App
+    Properties: 
+      AppName: 
+        Ref: AppName
+      AppType: 
+        Ref: AppType
+      DomainId: 
+        Ref: DomainId
+      ResourceSpec: 
+        Ref: ResourceSpec
+      Tags: 
+        Ref: Tags
+      UserProfileName: 
+        Red: UserProfileName
+Outputs:
+  AppType:
+    Description: The type of app.
+    Value:
+      Ref: SagemakerApp
+  AppName:
+    Description: The name of the app.
+    Value:
+      Ref: SagemakerApp
+  DomainId:
+    Description: The domain ID.
+    Value:
+      Ref: SagemakerApp
+  UserProfileName:
+    Description: The user profile name.
+    Value:
+      Ref: SagemakerApp

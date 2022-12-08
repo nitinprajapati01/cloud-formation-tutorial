@@ -1,0 +1,21 @@
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AwsAccountId: '293328213636'
+      DataSourceId: 'hjdsjhsxhf'
+      DataSourceParameters: 
+        ManifestFileLocation: 
+          Bucket: "https://quickseight.s3.amazonaws.com/dataset.xlsx"
+          Key: "https://quickseight.s3.amazonaws.com/dataset.xlsx"
+      Name: "jdnknkdjsn"
+      Permissions: 
+        - Actions: 
+            - "quicksight:UpdateDataSourcePermissions"
+            - "quicksight:DescribeDataSource"
+            - "quicksight:DescribeDataSourcePermissions"
+            - "quicksight:PassDataSource"
+            - "quicksight:UpdateDataSource"
+            - "quicksight:DeleteDataSource"
+          Principal: "arn:aws:iam::293328213636:group/quicksight"
+      Type: 'S3'

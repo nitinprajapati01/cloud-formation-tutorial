@@ -1,0 +1,752 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This stack template creates DMS pipeline to migrate one DB to another.
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: Tag Configuration
+        Parameters:
+          - pSystemOwner
+          - pApplicationName
+          - pSubDivision
+          - pDataSteward
+          - pDataSensitivity
+          - pResourceOwner
+          - pResourceExposure
+          - pResourceSensitivity
+          - pPurpose
+      - Label:
+          default: DMS Configuration
+        Parameters:
+          - pReplicationInstanceAllocatedStorage
+          - pReplicationInstanceClass
+          - pSourceDatabaseName
+          - pSourceDatabaseEngine
+          - pSourceDatabaseServerName
+          - pSourceDatabasePort
+          - pDmsReplicationTaskMigrationType
+          - pDbSchemaName
+          - pTargetDatabaseName
+          - pTargetDatabaseEngine
+          - pTargetDatabaseServerName
+          - pTargetDatabasePort
+    ParameterLabels:
+      pSystemOwner:
+        default: System Owner
+      pApplicationName:
+        default: Application Name
+      pSubDivision:
+        default: Sub Division
+      pDataSteward:
+        default: Data Steward
+      pDataSensitivity:
+        default: Data Sensitivity
+      pResourceOwner:
+        default: Resource Owner
+      pResourceExposure:
+        default: Resource Exposure
+      pResourceSensitivity:
+        default: Resource Sensitivity
+      pPurpose:
+        default: specify the purpose of the resource.
+      pReplicationInstanceAllocatedStorage:
+        default: Initial storage
+      pReplicationInstanceClass:
+        default: specify instance class
+      pSourceDatabaseName:
+        default: specify name of source endpoint database name
+      pSourceDatabaseEngine:
+        default: specify name of source endpoint database enginer
+      pSourceDatabaseServerName:
+        default: specify name of source endpoint database server name
+      pSourceDatabasePort:
+        default: specify name of source endpoint database port
+      pTargetDatabaseName:
+        default: specify name of target endpoint database name
+      pTargetDatabaseEngine:
+        default: specify name of target endpoint database enginer
+      pTargetDatabaseServerName:
+        default: specify name of target endpoint database server name
+      pTargetDatabasePort:
+        default: specify name of target endpoint database port
+      pDmsReplicationTaskMigrationType:
+        default: specify the migration type
+      pDbSchemaName:
+         default: DB schema name, which will be migrated
+      
+Parameters:
+  pSystemOwner:
+    Type: String
+    Description: |+
+      Enter the Active Directory ID of the system owner If you are not sure then use the requestor from the account request spreadsheet.
+      It cannot be more than 20 char, and cannot include [ ] : ; | = + * ? < > / \ , @ or non printable characters
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+    Default: puttaguntar
+
+  pApplicationName:
+    Type: String
+    Description: Enter the application name. If you are not sure then use the value from the project name in GitLab.
+    ConstraintDescription: The application name must be between 1 and 8 characters in length.
+    AllowedPattern: >-
+      (^[a-zA-Z0-9][a-zA-Z0-9._()-]{0,7}$)
+    MinLength: 1
+    MaxLength: 8
+    Default: dms
+
+  pSubDivision:
+    Description: Define SubDivision which the resources should be tagged with.
+    Type: String
+    MinLength: 1
+    Default: "-"
+
+  pDataSteward:
+    Type: String
+    Description: Enter the Active Directory group or user that is the data steward of this solution. If you are not sure then use the requestor from the account request spreadsheet.
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+    Default: puttaguntar
+
+  pDataSensitivity:
+    Type: String
+    Description: Select the data sensitivity of data hosted by this solution
+    ConstraintDescription: The data sensitivity must be an allowed value
+    AllowedValues:
+      - Red
+      - Amber
+      - Green
+    Default: Amber
+
+  pResourceOwner:
+    Type: String
+    Description: Enter the Active Directory group or user that is the resource owner of this solution. If you are not sure then use the requestor from the account request spreadsheet.
+    AllowedPattern: >-
+      (^[^\x00-\x21\x7f-\xff\[\]:;|=+*?<>/\\,@]{1,20}$)
+    Default: puttaguntar
+
+  pResourceExposure:
+    Type: String
+    Description: Select the most exposure that this solution is exposed to
+    ConstraintDescription: The resource exposure must be an allowed value
+    AllowedValues:
+      - Public
+      - Partner
+      - Saas
+      - OtherSecCloud
+      - AwsGovCloud
+      - SecOnPremise
+    Default: SecOnPremise
+
+  pResourceSensitivity:
+    Type: String
+    Description: Select the sensitivity of resources in this solution
+    ConstraintDescription: The resource sensitivity must be an allowed value
+    AllowedValues:
+      - Red
+      - Amber
+      - Green
+    Default: Amber
+
+  pPurpose:
+    Type: String
+    Description: Select the general purpose of the resource
+    ConstraintDescription: The resource purpose must be an allowed value
+    AllowedValues:
+      - wwws
+      - appl
+      - daba
+      - devo
+      - netw
+      - secr
+      - comp
+      - dago
+    Default: appl
+
+  pReplicationInstanceAllocatedStorage:
+    Description: The amount of storage (in gigabytes) to be initially allocated for the replication instance.            
+    Type: Number
+    Default: 100
+
+  pReplicationInstanceClass:
+    Description: The compute and memory capacity of the replication instance as specified by the replication instance class.
+    Type: String
+    Default: dms.t2.medium
+    AllowedValues:
+      - dms.t2.micro
+      - dms.t2.small
+      - dms.t2.medium
+      - dms.t3.medium
+      - dms.t2.large
+      - dms.c4.large
+      - dms.c4.xlarge
+      - dms.c4.2xlarge
+      - dms.c4.4xlarge
+
+  pSourceDatabaseName:
+    Description: The name of the source endpoint database. For a MySQL source or target endpoint, don't specify DatabaseName. To migrate to a specific database, use this setting and targetDbType.
+    Type: String
+
+  pSourceDatabaseEngine:
+    Description: The type of engine for the source endpoint, depending on the EndpointType value.            
+    Type: String
+    Default: mysql
+    AllowedValues:
+      - mysql
+      - oracle
+      - postgres
+      - mariadb
+      - aurora
+      - aurora-postgresql
+      - opensearch
+      - redshift
+      - s3
+      - db2
+      - azuredb
+      - sybase
+      - dynamodb
+      - mongodb
+      - kinesis
+      - kafka
+      - elasticsearch
+      - docdb
+      - sqlserver
+      - neptune
+
+  pSourceDatabaseServerName:
+    Description: The name of the server where the source endpoint database resides.            
+    Type: String
+    Default: dms-instance1.ck7b0dmipaal.us-east-1.rds.amazonaws.com
+
+  pSourceDatabasePort:
+    Description: The port used by the source endpoint database           
+    Type: Number
+    Default: 3306
+
+  pTargetDatabaseName:
+    Description: The name of the target endpoint database. For a MySQL source or target endpoint, don't specify DatabaseName. To migrate to a specific database, use this setting and targetDbType.
+    Type: String
+
+  pTargetDatabaseEngine:
+    Description: The type of engine for the target endpoint, depending on the EndpointType value.            
+    Type: String
+    Default: mysql
+    AllowedValues:
+      - mysql
+      - oracle
+      - postgres
+      - mariadb
+      - aurora
+      - aurora-postgresql
+      - opensearch
+      - redshift
+      - s3
+      - db2
+      - azuredb
+      - sybase
+      - dynamodb
+      - mongodb
+      - kinesis
+      - kafka
+      - elasticsearch
+      - docdb
+      - sqlserver
+      - neptune
+
+  pTargetDatabaseServerName:
+    Description: The name of the server where the target endpoint database resides.            
+    Type: String
+    Default: dms-inst1.ck7b0dmipaal.us-east-1.rds.amazonaws.com
+
+  pTargetDatabasePort:
+    Description: The port used by the target endpoint database           
+    Type: Number
+    Default: 3306
+
+  pDmsReplicationTaskMigrationType:
+    Description: The migration type
+    Type: String
+    Default: full-load
+    AllowedValues:
+      - full-load
+      - cdc
+      - full-load-and-cdc
+
+  pDbSchemaName:
+    Description: DB Schema name that will be migrated
+    Type: String
+    Default: testdatabase
+
+Mappings:
+  NameTagPartitionToPartitionAbbreviation:
+    aws-us-gov:
+      PartitionAbbr: g
+    aws:
+      PartitionAbbr: c
+
+  NameTagRegionToRegionAbbreviation:
+    us-east-1:
+      RegionAbbr: use1
+    us-east-2:
+      RegionAbbr: use2
+    us-west-1:
+      RegionAbbr: usw1
+    us-west-2:
+      RegionAbbr: usw2
+
+
+
+Resources:
+  rAWSDmsRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "dms2-vpc-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: 
+              Service: 
+                - "dms.amazonaws.com"
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${RoleName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "IAMRole"
+                RoleName: "DmsServiceRole"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+
+  rReplicationInstanceSubnetGroup:
+    Type: AWS::DMS::ReplicationSubnetGroup
+    DependsOn: rAWSDmsRole
+    Properties:
+      ReplicationSubnetGroupDescription: !Sub '${AWS::StackName} DMS Subnet Group'
+      ReplicationSubnetGroupIdentifier: !Sub '${AWS::StackName}-dms-subnet-group'
+      SubnetIds:
+       - Fn::ImportValue: VpcSubnet1
+       - Fn::ImportValue: VpcSubnet2
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${AWS::StackName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "DmsReplicationSubnetGroup"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+
+  rReplicationInstanceSubnetGroupLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/subnetgroup/${rReplicationInstanceSubnetGroup}'
+      RetentionInDays: 30
+
+  rDmsecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: "Allow access to RDS from dms"
+      GroupName: "dms-rds"
+      SecurityGroupIngress:
+        - CidrIp: "10.0.0.0/8"
+          FromPort: 3306
+          ToPort: 3306
+          IpProtocol: "tcp"
+      VpcId: 
+        "Fn::ImportValue": VpcId
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${AWS::StackName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "DmsSecurityGroup"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+  
+  sgLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/sg/${rDmsecurityGroup}'
+      RetentionInDays: 30
+
+  rReplicationInstance:
+    Type: AWS::DMS::ReplicationInstance
+    Properties:
+      AllocatedStorage: !Ref pReplicationInstanceAllocatedStorage
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: false
+      MultiAZ: false
+      PubliclyAccessible: false
+      KmsKeyId: !ImportValue DMSKeyArn
+      ReplicationInstanceClass: !Ref pReplicationInstanceClass
+      ReplicationInstanceIdentifier: !Sub '${AWS::StackName}-replication-instance'
+      ReplicationSubnetGroupIdentifier: !Ref rReplicationInstanceSubnetGroup
+      VpcSecurityGroupIds:
+        - Fn::ImportValue: ccoe-general-sg
+        - !GetAtt rDmsecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${AWS::StackName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "DmsReplicationInstance"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+
+  rReplicationInstanceLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/replicationInstance/${rReplicationInstance}'
+      RetentionInDays: 30
+
+  rDmsEndpointSource:
+    Type: AWS::DMS::Endpoint
+    Properties:
+      DatabaseName: !Ref pSourceDatabaseName
+      EndpointType: source
+      EngineName: !Ref pSourceDatabaseEngine
+      ServerName: !Ref pSourceDatabaseServerName
+      Port: !Ref pSourceDatabasePort
+      Username: 'admin'
+      Password: 'Password1!'
+      KmsKeyId: !ImportValue DMSKeyArn
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${AWS::StackName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "DmsSourceEndpoint"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+
+  rDmsEndpointTarget:
+    Type: AWS::DMS::Endpoint
+    Properties:
+      DatabaseName: !Ref pTargetDatabaseName
+      EndpointType: target
+      EngineName: !Ref pTargetDatabaseEngine
+      ServerName: !Ref pTargetDatabaseServerName
+      Port: !Ref pTargetDatabasePort
+      Username: 'admin'
+      Password: 'Password2!'
+      KmsKeyId: !ImportValue DMSKeyArn
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${AWS::StackName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "DmsTargetEndpoint"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+  
+  rDmsEndpointTargetLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/EndpointTarget/${rDmsEndpointTarget}'
+      RetentionInDays: 30
+
+  rDmsReplicationTask:
+    Type: AWS::DMS::ReplicationTask
+    Properties:
+      MigrationType: !Ref pDmsReplicationTaskMigrationType
+      ReplicationInstanceArn: !Ref rReplicationInstance
+      ReplicationTaskIdentifier: !Sub '${AWS::StackName}-dms-replication-task'
+      SourceEndpointArn: !Ref rDmsEndpointSource
+      TargetEndpointArn: !Ref rDmsEndpointTarget
+      TableMappings:
+                !Sub
+                    - |-
+                        {
+                            "rules": [
+                                {
+                                    "rule-type": "selection",
+                                    "rule-id": "1",
+                                    "rule-action": "include",
+                                    "object-locator": {
+                                        "schema-name": "${db_schema_name}",
+                                        "table-name": "%"
+                                    },
+                                    "rule-name": "1"
+                                }
+                            ]
+                        }                        
+                    -
+                        db_schema_name: !Ref pDbSchemaName
+      Tags:
+        - Key: Name
+          Value:
+            "Fn::Sub":
+              - >-
+                A-${Partition}${Region}-${LifeCycle}-${DivisionName}-${pApplicationName}-${Purpose}-${ServiceType}-${AWS::StackName}
+              - Partition: !FindInMap
+                  - NameTagPartitionToPartitionAbbreviation
+                  - !Ref "AWS::Partition"
+                  - PartitionAbbr
+                Region: !FindInMap
+                  - NameTagRegionToRegionAbbreviation
+                  - !Ref "AWS::Region"
+                  - RegionAbbr
+                LifeCycle: "{{resolve:ssm:/account/config/LifeCycleLowercase:1}}"
+                DivisionName: "{{resolve:ssm:/account/config/BusinessLowercase:1}}"
+                Purpose: !Ref pPurpose
+                ServiceType: "DmsReplicationTask"
+        - Key: LifeCycle
+          Value: "{{resolve:ssm:/account/config/LifeCycle:1}}"
+        - Key: SystemOwner
+          Value: !Ref pSystemOwner
+        - Key: ApplicationName
+          Value: !Ref pApplicationName
+        - Key: Business
+          Value: "{{resolve:ssm:/account/config/Business:1}}"
+        - Key: SupportBusiness
+          Value: "{{resolve:ssm:/account/config/SupportBusiness:1}}"
+        - Key: SupportCcoeGroup
+          Value: "{{resolve:ssm:/account/config/SupportCcoeGroup:1}}"
+        - Key: DataSteward
+          Value: !Ref pDataSteward
+        - Key: DataSensitivity
+          Value: !Ref pDataSensitivity
+        - Key: ResourceOwner
+          Value: !Ref pResourceOwner
+        - Key: ResourceSensitivity
+          Value: !Ref pResourceSensitivity
+        - Key: ResourceExposure
+          Value: !Ref pResourceExposure
+        - Key: SubDivision
+          Value: !Ref pSubDivision
+
+  rDmsReplicationTaskLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/ReplicationTask/${rDmsReplicationTask}'
+      RetentionInDays: 30
+
+Outputs:
+    DmsEndpointSource:
+        Description: DMS source Endpoint
+        Value: !Ref rDmsEndpointSource
+        Export:
+            Name: !Sub '${AWS::StackName}-dms-source-endpoint'
+    DmsEndpointTarget:
+        Description: DMS target Endpoint
+        Value: !Ref rDmsEndpointTarget
+        Export:
+            Name: !Sub '${AWS::StackName}-dms-target-endpoint'
+    ReplicationInstance:
+        Description: DMS Replication Instance
+        Value: !Ref rReplicationInstance
+        Export:
+            Name: !Sub '${AWS::StackName}-dms-replication-instance'
+    DmsReplicationTask:
+        Description: DMS Replication Task
+        Value: !Ref rDmsReplicationTask
+        Export:
+            Name: !Sub '${AWS::StackName}-dms-replication-task'

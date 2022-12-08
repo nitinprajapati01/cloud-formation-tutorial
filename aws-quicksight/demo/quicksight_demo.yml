@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer':
+    1ba39e56-5df4-4b8b-9ae2-fd1812988892:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 315.00390625
+        'y': 122.01171875
+      z: 0
+Resources:
+  QSDS448YK:
+    Type: 'AWS::QuickSight::DataSet'
+    Properties: 
+      AwsAccountId: "293328213636"
+      ColumnGroups: 
+        GeoSpatialColumnGroup: 
+          Columns: 
+            - "firstc"
+          Name: "myclooumn"
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 56b8449c-ccfd-4e4f-9257-bbb192126c75

@@ -1,0 +1,41 @@
+Parameters:
+  Description:
+    Description: A description of the fleet.
+    Type: String
+  DeviceFleetName: 
+    Description: Name of the device fleet.
+    Type: String
+  RoleArn:
+    Description: AWS Internet of Things (IoT) object name.
+    Type: String
+  KmsKeyId:
+    Description: The AWS Key Management Service (AWS KMS) key that Amazon SageMaker uses to encrypt data on the storage volume after compilation job.
+    Type: String
+  S3OutputLocation:
+    Description: The Amazon Simple Storage (S3) bucket URI.
+    Type: String
+  Tags:
+    Description: An array of key-value pairs that contain metadata to help you categorize and organize your device fleets. 
+    Type: String
+Resources:
+  SagemakerDeviceFleet:
+    Type: AWS::SageMaker::DeviceFleet
+    Properties: 
+      Description: 
+        Ref: Description
+      DeviceFleetName: 
+        Ref: DeviceFleetName
+      OutputConfig: 
+        KmsKeyId: 
+          Ref: KmsKeyId
+        S3OutputLocation: 
+          Ref: S3OutputLocation
+      RoleArn: 
+        Ref: RoleArn
+      Tags: 
+        Ref: Tags
+Outputs:
+  DeviceFleetName:
+    Description: Name of the device fleet.
+    Value:
+      Ref: SagemakerDeviceFleet

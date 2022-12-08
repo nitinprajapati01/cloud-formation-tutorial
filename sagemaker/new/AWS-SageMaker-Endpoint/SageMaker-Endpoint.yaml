@@ -1,0 +1,93 @@
+Parameters:
+  EndpointConfigName:
+    Description: The name of the AWS::SageMaker::EndpointConfig resource that specifies the configuration for the endpoint.
+    Type: String
+  EndpointName: 
+    Description: The name of the endpoint.The name must be unique within an AWS Region in your AWS account.
+    Type: String
+  RetainAllVariantProperties:
+    Description: When updating endpoint resources, enables or disables the retention of variant properties, such as the instance count or the variant weight. 
+    Type: boolean
+  RetainDeploymentConfig:
+    Description: Specifies whether to reuse the last deployment configuration.
+    Type: boolean
+  AlarmName:
+    Description: The name of a CloudWatch alarm in your account.
+    Type: String
+  MaximumExecutionTimeoutInSeconds:
+    Description: Maximum execution timeout for the deployment. Note that the timeout value should be larger than the total waiting time specified in TerminationWaitInSeconds and WaitIntervalInSeconds.
+    Type: integer
+  TerminationWaitInSeconds:
+    Description: Additional waiting time in seconds after the completion of an endpoint deployment before terminating the old endpoint fleet. Default is 0.
+    Type: integer
+  WaitIntervalInSeconds:
+    Description: The waiting time (in seconds) between incremental steps to turn on traffic on the new endpoint fleet.
+    Type: integer
+  CanarySizeType:
+    Description: Specifies the endpoint capacity type.
+    Type: String
+  CanarySizeValue:
+    Description: Defines the capacity size, either as a number of instances or a capacity percentage.
+    Type: integer
+  LinearStepSizeType:
+    Description: Specifies the endpoint capacity type.
+    Type: String
+  LinearStepSizeValue:
+    Description: Defines the capacity size, either as a number of instances or a capacity percentage.
+    Type: integer
+  Type:
+    Description: Traffic routing strategy type.
+    Type: String
+  VariantPropertyType:
+    Description: The type of variant property.
+    Type: String
+  Tags:
+    Description: A list of key-value pairs to apply to this resource.
+    Type: String
+Resources:
+  SagemakerEndpoint:  
+    Type: AWS::SageMaker::Endpoint
+    Properties: 
+      DeploymentConfig: 
+        AutoRollbackConfiguration: 
+          Alarms: 
+              AlarmName: 
+                Ref: AlarmName
+        BlueGreenUpdatePolicy: 
+          MaximumExecutionTimeoutInSeconds: 
+            Ref: MaximumExecutionTimeoutInSeconds
+          TerminationWaitInSeconds: 
+            Ref: TerminationWaitInSeconds
+          TrafficRoutingConfiguration: 
+            CanarySize: 
+              Type: 
+                Ref: CanarySizeType
+              Value:
+                Ref: CanarySizeValue 
+            LinearStepSize: 
+              Type: 
+                Ref: LinearStepSizeType
+              Value:
+                Ref: LinearStepSizeValue
+            Type: 
+              Ref: Type
+            WaitIntervalInSeconds: 
+              Ref: WaitIntervalInSeconds
+      EndpointConfigName: 
+        Ref: EndpointConfigName
+      EndpointName: 
+        Ref: EndpointName
+      ExcludeRetainedVariantProperties: 
+        VariantPropertyType: 
+          Ref: VariantPropertyType
+      RetainAllVariantProperties: 
+        Ref: RetainAllVariantProperties
+      RetainDeploymentConfig: 
+        Ref: RetainDeploymentConfig
+      Tags: 
+        Ref: Tags
+Outputs:
+  EndpointName:
+    Description: The name of the endpoint.The name must be unique within an AWS Region in your AWS account.
+    Value:
+      Ref: SagemakerEndpoint

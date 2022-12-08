@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources: 
+  myReplicationSubnetGroup: 
+    Properties: 
+      ReplicationSubnetGroupDescription: description
+      ReplicationSubnetGroupIdentifier: identifier
+      SubnetIds: 
+        - subnet-7b5b4112
+        - subnet-7b5b4115
+      # Tags: 
+      #   - 
+      #     Key: String
+      #     Value: String
+    Type: "AWS::DMS::ReplicationSubnetGroup"
+
+  rReplicationInstanceSubnetGroupLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/subnetgroup/${myReplicationSubnetGroup}'
+      RetentionInDays: 30
+  
+  RootRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - dms.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      # Path: /
+      # Policies:
+      #   - PolicyName: root
+      #     PolicyDocument:
+      #       Version: "2012-10-17"
+      #       Statement:
+      #         - Effect: Allow
+      #           Action: '*'
+      #           Resource: '*'
+  
+  # InstanceSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Allow http to client host
+  #     # VpcId: Ref: myVPC
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 80
+  #         ToPort: 80
+  #         CidrIp: 0.0.0.0/0
+  #     SecurityGroupEgress:
+  #       - IpProtocol: tcp
+  #         FromPort: 80
+  #         ToPort: 80
+  #         CidrIp: 0.0.0.0/0
+  
+  # sgLogGroup:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Sub '/aws/sg/${InstanceSecurityGroup}'
+  #     RetentionInDays: 30
+
+  # BasicReplicationInstance: 
+  #   Properties: 
+  #     ReplicationInstanceClass: dms.t2.small
+  #   Type: "AWS::DMS::ReplicationInstance"
+
+  # rReplicationInstanceLog:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Sub '/aws/replicationInstance/${BasicReplicationInstance}'
+  #     RetentionInDays: 30
+
+  # BasicEndpoint: 
+  #   Properties: 
+  #     DatabaseName: my-db
+  #     EndpointType: target
+  #     EngineName: mysql
+  #     Password: PasswordParameter
+  #     Port: 1234
+  #     ServerName: server.db.amazon.com
+  #     Tags: 
+  #       - 
+  #         Key: type
+  #         Value: new
+  #     Username: username
+  #   Type: "AWS::DMS::Endpoint"
+  
+  # rDmsEndpointSource:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Sub '/aws/EndpointTarget/${BasicEndpoint}'
+  #     RetentionInDays: 30
+
+  # myReplicationTask: 
+  #   Properties: 
+  #     MigrationType: full-load
+  #     ReplicationInstanceArn: ReplicationInstance
+  #     SourceEndpointArn: SourceEndpoint
+  #     TableMappings: "{ \"rules\": [ { \"rule-type\": \"selection\", \"rule-id\": \"1\", \"rule-name\": \"1\", \"object-locator\": { \"schema-name\": \"%\", \"table-name\": \"%\" }, \"rule-action\": \"include\" } ] }"
+  #     TargetEndpointArn: TargetEndpoint
+  #   Type: "AWS::DMS::ReplicationTask"
+  
+  # rDmsReplicationTaskLog:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Sub '/aws/ReplicationTask/${myReplicationTask}'
+  #     RetentionInDays: 30

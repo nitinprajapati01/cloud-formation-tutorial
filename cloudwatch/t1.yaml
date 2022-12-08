@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources: 
+  myReplicationSubnetGroup: 
+    Type: "AWS::DMS::ReplicationSubnetGroup"
+    Properties: 
+      ReplicationSubnetGroupDescription: description
+      ReplicationSubnetGroupIdentifier: identifier
+      SubnetIds: 
+        - subnet-7b5b4112
+        - subnet-7b5b4115
+
+  rReplicationInstanceSubnetGroupLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/subnetgroup/${myReplicationSubnetGroup}'
+      RetentionInDays: 30
+  
+  RootRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - dms.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+              - 'AmazonDMSVPCManagementRole'

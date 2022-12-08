@@ -1,0 +1,231 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template sets up sample AWS Glue resources to be orchestrated by AWS Step Functions.
+
+Parameters:
+
+  databasename:
+    Type: String
+    MinLength: "4"
+    Default: "awsglue"
+    Description: "Name of the AWS Glue database to contain this CloudFormation template's tables."
+
+  tablename:
+    Type: String
+    MinLength: "4"
+    Default: "awsglue_table"
+    Description: "Name of the data table in AWS Glue."
+
+  ETLScriptsPrefix:
+    Type: String
+    MinLength: "1"
+    Default: "glueETLScripts"
+    Description: "Location of the Glue job ETL scripts in S3."
+
+  ETLOutputPrefix:
+    Type: String
+    MinLength: "1"
+    Default: "glueETLOutput"
+    Description: "Name of the S3 output path to which this CloudFormation template's AWS Glue jobs are going to write ETL output."
+
+  DataBucketName:
+    Type: String
+    MinLength: "1"
+    Default: "glueDataBucket"
+    Description: "Name of the S3 bucket in which the source data will be uploaded. Bucket is created by this CFT."
+
+  ArtifactBucketName:
+    Type: String
+    MinLength: "1"
+    Default: "glueArtifactBucket"
+    Description: "Name of the S3 bucket in which the ETL scripts reside. Bucket is NOT created by this CFT."
+  
+  CatalogId:
+    Type: String
+    Description: "Location of the Glue job ETL scripts in S3."
+
+  KmsKeyId:
+    Type: String
+    Description: "An AWS KMS key that is used to encrypt the connection password."
+
+  CatalogEncryptionMode:
+    Type: String
+    Description: "The ID of the Data Catalog in which the settings are created."
+
+  SseAwsKmsKeyId:
+    Type: String
+    Description: "The ID of the AWS KMS key to use for encryption at rest."
+  
+  ReturnConnectionPasswordEncrypted:
+    AllowedValues: [true, false]
+    Type: String
+    Description: "When the ReturnConnectionPasswordEncrypted flag is set to true, passwords remain encrypted in the responses of GetConnection and GetConnections."
+
+Resources:
+
+  ### AWS GLUE RESOURCES ###
+  AWSGlueJobRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - glue.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                  - "s3:DeleteObject"
+                Resource:
+                  - !Sub "arn:aws:s3:::${DataBucketName}"
+                  - !Sub "arn:aws:s3:::${DataBucketName}/*"
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}"
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Path: "/"
+
+
+  createdatabase:
+    Type: "AWS::Glue::Database"
+    Properties:
+      DatabaseInput:
+        Description: "database Process"
+        Name: !Ref databasename
+      CatalogId: !Ref AWS::AccountId
+
+  createTable:
+    Type: "AWS::Glue::Table"
+    DependsOn: createdatabase
+    Properties:
+      TableInput:
+        Description: "process table "
+        TableType: "EXTERNAL_TABLE"
+        Parameters: {
+                    "CrawlerSchemaDeserializerVersion": "1.0",
+                    "compressionType": "none",
+                    "classification": "csv",
+                    "recordCount": "948",
+                    "typeOfData": "file",
+                    "CrawlerSchemaSerializerVersion": "1.0",
+                    "columnsOrdered": "true",
+                    "objectCount": "1",
+                    "delimiter": ",",
+                    "skip.header.line.count": "1",
+                    "averageRecordSize": "160",
+                    "sizeKey": "151746"
+        }
+        StorageDescriptor:
+          StoredAsSubDirectories: False
+          Parameters: {
+                    "CrawlerSchemaDeserializerVersion": "1.0",
+                    "compressionType": "none",
+                    "classification": "csv",
+                    "recordCount": "948",
+                    "typeOfData": "file",
+                    "CrawlerSchemaSerializerVersion": "1.0",
+                    "columnsOrdered": "true",
+                    "objectCount": "1",
+                    "delimiter": ",",
+                    "skip.header.line.count": "1",
+                    "averageRecordSize": "160",
+                    "sizeKey": "151746"
+          }
+          InputFormat: "org.apache.hadoop.mapred.TextInputFormat"
+          OutputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+          Columns:
+            - Type: string
+              Name: date
+            - Type: bigint
+              Name: new visitors seo
+            - Type: bigint
+              Name: new visitors cpc
+            - Type: bigint
+              Name: new visitors social media
+            - Type: bigint
+              Name: return visitors
+            - Type: bigint
+              Name: twitter mentions
+            - Type: bigint
+              Name: twitter follower adds
+            - Type: bigint
+              Name: twitter followers cumulative
+            - Type: bigint
+              Name: mailing list adds
+            - Type: bigint
+              Name: mailing list cumulative
+            - Type: bigint
+              Name: website pageviews
+            - Type: bigint
+              Name: website visits
+            - Type: bigint
+              Name: website unique visits
+            - Type: bigint
+              Name: mobile uniques
+            - Type: bigint
+              Name: tablet uniques
+            - Type: bigint
+              Name: desktop uniques
+            - Type: bigint
+              Name: free sign up
+            - Type: bigint
+              Name: paid conversion
+            - Type: string
+              Name: events
+          SerdeInfo:
+            Parameters: {
+                        "field.delim": ","
+            }
+            SerializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+          Compressed: False
+          Location: !Sub "s3://${DataBucketName}/table/"
+        Retention: 0
+        Name: !Ref tablename
+      DatabaseName: !Ref databasename
+      CatalogId: !Ref AWS::AccountId
+
+  ProcessDataJob:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !Ref AWSGlueJobRole
+      Name: "ProcessData"
+      Command: {
+        "Name" : "glueetl",
+        "ScriptLocation": !Sub "s3://${ArtifactBucketName}/${ETLScriptsPrefix}/process_data.py"
+      }
+      DefaultArguments: {
+          "--database_name" : !Ref databasename,
+          "--table_name" : !Ref tablename,
+          "--s3_output_path": !Sub "s3://${DataBucketName}/${ETLOutputPrefix}/tmp/ProcessDataJob"
+      }
+      MaxRetries: 0
+      Description: "Process data."
+      AllocatedCapacity: 5
+  
+  Encryption:
+    Type: AWS::Glue::DataCatalogEncryptionSettings
+    Properties: 
+      CatalogId: 
+        Ref: CatalogId
+      DataCatalogEncryptionSettings: 
+        ConnectionPasswordEncryption: 
+          KmsKeyId: 
+            Ref: KmsKeyId
+          ReturnConnectionPasswordEncrypted: 
+            Ref: ReturnConnectionPasswordEncrypted
+        EncryptionAtRest: 
+          CatalogEncryptionMode: 
+            Ref: CatalogEncryptionMode
+          SseAwsKmsKeyId: 
+            Ref: SseAwsKmsKeyId

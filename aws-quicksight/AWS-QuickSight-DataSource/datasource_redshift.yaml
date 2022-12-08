@@ -1,0 +1,59 @@
+Parameters:
+  Name:
+    Description: give the database name 
+    Type: String
+  password:
+    Description: give the Password of your database 
+    Type: String
+  ClusterId:
+    Description: Cluster ID. This field can be blank if the Host and Port are provided.
+    Type: String
+  Database:
+    Description: Database.
+    Type: String
+  Host:
+    Description: Host. This field can be blank if ClusterId is provided.
+    Type: String
+Resources:
+  SecretsManagerQuicksight:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Description: AWS RDS admin credentials
+      SecretString: '{"username":"admin","password": { "Ref" : "password" }}'
+  SecretRDSInstanceAttachment:
+    Type: 'AWS::SecretsManager::SecretTargetAttachment'
+    Properties:
+      SecretId: !Ref SecretsManagerQuicksight
+      TargetId: 
+        Ref: Name
+      TargetType: 'AWS::RDS::DBInstance'
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AwsAccountId: '293328213636'
+      DataSourceParameters:
+        RedshiftParameters: 
+          ClusterId: 
+            Ref: ClusterId
+          Database: 
+            Ref: Database
+          Host: 
+            Ref: Host
+          Port: 5439
+      Credentials: 
+        CredentialPair: 
+          AlternateDataSourceParameters: 
+            - RedshiftParameters: 
+                ClusterId: 
+                  Ref: ClusterId
+                Database: 
+                  Ref: Database
+                Host: 
+                  Ref: Host
+                Port: 5439
+          Password: !Sub '{{resolve:secretsmanager:${SecretsManagerQuicksight}::password}}'
+          Username: !Sub '{{resolve:secretsmanager:${SecretsManagerQuicksight}::username}}'
+      DataSourceId: '1236835363'
+      Name: 
+        Ref: Name
+      Type: 'REDSHIFT'

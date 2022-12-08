@@ -1,0 +1,42 @@
+Parameters:
+  Name:
+    Description: give the database name 
+    Type: String
+  password:
+    Description: give the Password of your database 
+    Type: String
+Resources:
+  SecretsManagerQuicksight:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Description: AWS RDS admin credentials
+      SecretString: '{"username":"admin","password": { "Ref" : "password" }}'
+  SecretRDSInstanceAttachment:
+    Type: 'AWS::SecretsManager::SecretTargetAttachment'
+    Properties:
+      SecretId: !Ref SecretsManagerQuicksight
+      TargetId: 
+        Ref: Name
+      TargetType: 'AWS::RDS::DBInstance'
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AwsAccountId: '293328213636'
+      DataSourceParameters:
+        MySqlParameters:
+          Database: 'mydata'
+          Host: 'database-2.cprwghxatyc5.us-east-1.rds.amazonaws.com'
+          Port: 3306
+      Credentials: 
+        CredentialPair: 
+          AlternateDataSourceParameters: 
+            - MySqlParameters: 
+                Database: 'mydata'
+                Host: 'database-2.cprwghxatyc5.us-east-1.rds.amazonaws.com'
+                Port: 3306
+          Password: !Sub '{{resolve:secretsmanager:${SecretsManagerQuicksight}::password}}'
+          Username: !Sub '{{resolve:secretsmanager:${SecretsManagerQuicksight}::username}}'
+      DataSourceId: '1236835363'
+      Name: 
+        Ref: Name
+      Type: 'MYSQL'

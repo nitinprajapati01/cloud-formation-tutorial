@@ -1,0 +1,209 @@
+Parameters:
+  JobDefinitionName:
+    Description: The name of the bias job definition. The name must be unique within an AWS Region in the AWS account.
+    Type: String
+  RoleArn:
+    Description: The Amazon Resource Name (ARN) of an IAM role that Amazon SageMaker can assume to perform tasks on your behalf.
+    Type: String
+  InstanceType:
+    Description: Not currently supported by AWS CloudFormation.
+    Type: String
+  VolumeKmsKeyId:
+    Description: Not currently supported by AWS CloudFormation.
+    Type: String
+  InstanceCount:
+    Description: Not currently supported by AWS CloudFormation.
+    Type: integer
+  VolumeSizeInGB:
+    Description: Not currently supported by AWS CloudFormation.
+    Type: integer
+  EnableInterContainerTrafficEncryption:
+    Description: Whether to encrypt all communications between distributed processing jobs. 
+    Type: boolean
+  EnableNetworkIsolation:
+    Description: Whether to allow inbound and outbound network calls to and from the containers used for the processing job.
+    Type: boolean
+  SecurityGroupIds:
+    Description: The VPC security group IDs, in the form sg-xxxxxxxx. Specify the security groups for the VPC that is specified in the Subnets field.
+    Type: String
+  Subnets:
+    Description: The ID of the subnets in the VPC to which you want to connect your training job or model.
+    Type: String
+  MaxRuntimeInSeconds:
+    Description: The maximum length of time, in seconds, that a training or compilation job can run.
+    Type: integer
+  Tags:
+    Description: An array of key-value pairs to apply to this resource.
+    Type: String
+  key:
+    Description: Sets the environment variables in the container that the monitoring job runs.
+    Type: map
+  value:
+    Description: Sets the environment variables in the container that the monitoring job runs.
+    Type: map
+  ContainerArguments:
+    Description: An array of arguments for the container used to run the monitoring job.
+    Type: String
+  ContainerEntrypoint:
+    Description: Specifies the entrypoint for a container that the monitoring job runs.
+    Type: String
+  ImageUri:
+    Description: The address of the container image that the monitoring job runs.
+    Type: String
+  PostAnalyticsProcessorSourceUri:
+    Description: An Amazon S3 URI to a script that is called after analysis has been performed. Applicable only for the built-in (first party) containers.
+    Type: String
+  ProblemType:
+    Description: The machine learning problem type of the model that the monitoring job monitors.
+    Type: String
+  RecordPreprocessorSourceUri:
+    Description: An Amazon S3 URI to a script that is called per row prior to running analysis.
+    Type: String
+  BaseliningJobName:
+    Description: The name of the baseline model explainability job.
+    Type: String
+  S3Uri:
+    Description: The Amazon S3 URI for the constraints resource.
+    Type: String
+  EndpointName:
+    Description: An endpoint in customer's account which has enabled DataCaptureConfig enabled.
+    Type: String
+  EndTimeOffset:
+    Description: If specified, monitoring jobs substract this time from the end time. 
+    Type: String
+  InferenceAttribute:
+    Description: The attribute of the input data that represents the ground truth label.
+    Type: String
+  LocalPath:
+    Description: Path to the filesystem where the endpoint data is available to the container.
+    Type: String
+  ProbabilityAttribute:
+    Description: In a classification problem, the attribute that represents the class probability.
+    Type: String
+  S3DataDistributionType:
+    Description: Whether input data distributed in Amazon S3 is fully replicated or sharded by an S3 key. 
+    Type: String
+  S3InputMode:
+    Description: Whether the Pipe or File is used as the input mode for transferring data for the monitoring job. 
+    Type: String
+  StartTimeOffset:
+    Description: If specified, monitoring jobs substract this time from the start time.
+    Type: String
+  ProbabilityThresholdAttribute:
+    Description: The threshold for the class probability to be evaluated as a positive result.
+    Type: double
+  GroundTruthS3InputS3Uri:
+    Description: The address of the Amazon S3 location of the ground truth labels.
+    Type: String
+  ModelQualityJobOutputConfigKmsKeyId:
+    Description: The AWS Key Management Service (AWS KMS) key that Amazon SageMaker uses to encrypt the model artifacts at rest using Amazon S3 server-side encryption.
+    Type: String
+  S3OutputLocalPath:
+    Description: The local path to the Amazon S3 storage location where Amazon SageMaker saves the results of a monitoring job.
+    Type: String
+  S3OutputS3UploadMode:
+    Description: Whether to upload the results of the monitoring job continuously or after the job completes.
+    Type: String
+  S3OutputS3Uri:
+    Description: A URI that identifies the Amazon S3 storage location where Amazon SageMaker saves the results of a monitoring job.
+    Type: String
+Resources:
+  SagemakerModelQualityJobDefinition:
+    Type: AWS::SageMaker::ModelQualityJobDefinition
+    Properties: 
+      JobDefinitionName:
+        Ref: JobDefinitionName
+      JobResources: 
+        ClusterConfig: 
+          InstanceCount: 
+            Ref: InstanceCount
+          InstanceType: 
+            Ref: InstanceType
+          VolumeKmsKeyId: 
+            Ref: VolumeKmsKeyId
+          VolumeSizeInGB: 
+            Ref: VolumeSizeInGB
+      ModelQualityAppSpecification: 
+        ContainerArguments: 
+          Ref: ContainerArguments
+        ContainerEntrypoint: 
+          Ref: ContainerEntrypoint
+        Environment: 
+          key: 
+            Ref: key
+          value:
+            Ref: value
+        ImageUri: 
+          Ref: ImageUri
+        PostAnalyticsProcessorSourceUri: 
+          Ref: PostAnalyticsProcessorSourceUri
+        ProblemType: 
+          Ref: ProblemType
+        RecordPreprocessorSourceUri: 
+          Ref: RecordPreprocessorSourceUri
+      ModelQualityBaselineConfig: 
+        BaseliningJobName: 
+          Ref: BaseliningJobName
+        ConstraintsResource: 
+          S3Uri: 
+            Ref: S3Uri
+      ModelQualityJobInput: 
+        EndpointInput: 
+          EndpointName: 
+            Ref: EndpointName
+          EndTimeOffset: 
+            Ref: EndTimeOffset
+          InferenceAttribute: 
+            Ref: InferenceAttribute
+          LocalPath: 
+            Ref: LocalPath
+          ProbabilityAttribute: 
+            Ref: ProbabilityAttribute
+          ProbabilityThresholdAttribute: 
+            Ref: ProbabilityThresholdAttribute
+          S3DataDistributionType: 
+            Ref: S3DataDistributionType
+          S3InputMode: 
+            Ref: S3InputMode
+          StartTimeOffset: 
+            Ref: StartTimeOffset
+        GroundTruthS3Input: 
+          S3Uri: 
+            Ref: GroundTruthS3InputS3Uri
+      ModelQualityJobOutputConfig: 
+        KmsKeyId: 
+          Ref: ModelQualityJobOutputConfigKmsKeyId
+        MonitoringOutputs: 
+          S3Output: 
+            LocalPath: 
+              Ref: S3OutputLocalPath
+            S3UploadMode: 
+              Ref: S3OutputS3UploadMode
+            S3Uri: 
+              Ref: S3OutputS3Uri
+      NetworkConfig: 
+        EnableInterContainerTrafficEncryption:
+          Ref: EnableInterContainerTrafficEncryption
+        EnableNetworkIsolation:
+          Ref: EnableNetworkIsolation
+        VpcConfig: 
+          SecurityGroupIds: 
+            Ref: SecurityGroupIds
+          Subnets: 
+            Ref: Subnets
+      RoleArn: 
+        Ref: RoleArn
+      StoppingCondition: 
+        MaxRuntimeInSeconds: 
+          Ref: MaxRuntimeInSeconds 
+      Tags: 
+        Ref: Tags
+Outputs:
+  JobDefinitionName:
+    Description: The name of the bias job definition. The name must be unique within an AWS Region in the AWS account.
+    Value:
+      Ref: SagemakerModelQualityJobDefinition
+  RoleArn:
+    Description: The Amazon Resource Name (ARN) of an IAM role that Amazon SageMaker can assume to perform tasks on your behalf.
+    Value:
+      Ref: SagemakerModelQualityJobDefinition

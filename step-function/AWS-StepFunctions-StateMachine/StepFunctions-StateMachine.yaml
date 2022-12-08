@@ -1,0 +1,83 @@
+Parameters:
+  DefinitionString:
+    Description: The Amazon States Language definition of the state machine. The state machine definition must be in JSON.
+    Type: String
+  RoleArn:
+    Description: The Amazon Resource Name (ARN) of the IAM role to use for this state machine.
+    Type: String
+  StateMachineName:
+    Description: The name of the state machine.
+    Type: String
+  StateMachineType:
+    Description: Determines whether a STANDARD or EXPRESS state machine is created. 
+    Type: String
+  Key:
+    Description: The key for a key-value pair in a tag entry.
+    Type: String
+  Value:
+    Description: The value for a key-value pair in a tag entry.
+    Type: String
+  Bucket:
+    Description: The name of the S3 bucket where the state machine definition JSON or YAML file is stored.
+    Type: String
+  Key:
+    Description: The name of the state machine definition file (Amazon S3 object name).
+    Type: String
+  Version:
+    Description: For versioning-enabled buckets, a specific version of the state machine definition.
+    Type: String
+  LogGroupArn:
+    Description: The ARN of the the CloudWatch log group to which you want your logs emitted to.
+    Type: String
+  Level:
+    Description: Defines which category of execution history events are logged.
+    Type: String
+  IncludeExecutionData:
+    Description: Determines whether execution data is included in your log. When set to false, data is excluded.
+    Type: boolean
+  Enabled:
+    Description: When set to true, X-Ray tracing is enabled.
+    Type: boolean
+Resources:
+  StepFunctionSateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties: 
+      DefinitionS3Location: 
+        Bucket: 
+          Ref: Bucket
+        Key: 
+          Ref: Key
+        Version: 
+          Ref: Version
+      DefinitionString: 
+        Ref: DefinitionString
+      DefinitionSubstitutions: 
+        Key : Value
+      LoggingConfiguration: 
+        Destinations: 
+          CloudWatchLogsLogGroup: 
+            LogGroupArn: 
+              Ref: LogGroupArn
+        IncludeExecutionData: 
+          Ref: IncludeExecutionData
+        Level: 
+          Ref: Level
+      RoleArn: 
+        Ref: RoleArn
+      StateMachineName: 
+        Ref: StateMachineName
+      StateMachineType: 
+        Ref: StateMachineType
+      Tags: 
+        Key: 
+          Ref: Key
+        Value: 
+          Ref: Value
+      TracingConfiguration: 
+        Enabled: 
+          Ref: Enabled
+Outputs:
+  RoleArn:
+    Description: The Amazon Resource Name (ARN) of the IAM role to use for this state machine.
+    Value:
+      Ref: StepFunctionSateMachine

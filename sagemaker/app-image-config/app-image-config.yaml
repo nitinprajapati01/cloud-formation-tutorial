@@ -1,0 +1,25 @@
+Parameters:
+  AppImageConfigName:
+    Description: The name of the AppImageConfig. Must be unique to your account.
+    Type: String
+  KernelGatewayImageConfig: 
+    Description: The configuration for the file system and kernels in the SageMaker image.
+    Type: String
+  Tags:
+    Description: An array of key-value pairs to apply to this resource.
+    Type: String
+Resources:
+  sagemakerimageconfig:
+    Type: AWS::SageMaker::AppImageConfig
+    Properties: 
+      AppImageConfigName: 
+        Ref: AppImageConfigName
+      KernelGatewayImageConfig: 
+        Ref: KernelGatewayImageConfig
+      Tags: 
+        Ref: Tags
+Outputs:
+  AppImageConfigName:
+    Description: The name of the AppImageConfig. Must be unique to your account.
+    Value:
+      Ref: sagemakerimageconfig

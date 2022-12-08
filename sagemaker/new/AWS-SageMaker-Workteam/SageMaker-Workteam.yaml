@@ -1,0 +1,48 @@
+Parameters:
+  Tags:
+    Description: An array of key-value pairs.
+    Type: String
+  NotificationTopicArn:
+    Description: The ARN for the Amazon SNS topic to which notifications should be published.
+    Type: String
+  Description:
+    Description: A description of the work team.
+    Type: String
+  WorkteamName:
+    Description: The name of the work team.
+    Type: String
+  CognitoClientId:
+    Description: An identifier for an application client. You must create the app client ID using Amazon Cognito.
+    Type: String
+  CognitoUserGroup:
+    Description: An identifier for a user group.
+    Type: String
+  CognitoUserPool:
+    Description: An identifier for a user pool. The user pool must be in the same region as the service that you are calling.
+    Type: String
+Resources:
+  SagemakerWorkteam:
+    Type: AWS::SageMaker::Workteam
+    Properties: 
+      Description: 
+        Ref: Description
+      MemberDefinitions: 
+        CognitoMemberDefinition: 
+          CognitoClientId: 
+            Ref: CognitoClientId
+          CognitoUserGroup: 
+            Ref: CognitoUserGroup
+          CognitoUserPool: 
+            Ref: CognitoUserPool
+      NotificationConfiguration: 
+        NotificationTopicArn: 
+          Ref: NotificationTopicArn
+      Tags: 
+        Ref: Tags
+      WorkteamName: 
+        Ref: WorkteamName
+  Outputs:
+    WorkteamName:
+      Description: The name of the work team.
+      Value:
+        Ref: SagemakerWorkteam

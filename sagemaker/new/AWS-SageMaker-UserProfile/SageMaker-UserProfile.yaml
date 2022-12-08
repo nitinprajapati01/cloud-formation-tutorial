@@ -1,0 +1,127 @@
+Parameters:
+  Tags:
+    Description: An array of key-value pairs to apply to this resource.
+    Type: String
+  DomainId:
+    Description: The domain ID.
+    Type: String
+  SingleSignOnUserIdentifier:
+    Description: A specifier for the type of value specified in SingleSignOnUserValue. Currently, the only supported value is "UserName".
+    Type: String
+  SingleSignOnUserValue:
+    Description: The username of the associated AWS Single Sign-On User for this UserProfile. If the Domain's AuthMode is SSO, this field is required, and must match a valid username of a user in your directory. 
+    Type: String
+  UserProfileName:
+    Description: The user profile name.
+    Type: String
+  ExecutionRole:
+    Description: The execution role for the user.
+    Type: String
+  SecurityGroups:
+    Description: The security groups for the Amazon Virtual Private Cloud (VPC) that Studio uses for communication.
+    Type: String
+  InstanceType:
+    Description: The instance type that the image version runs on.
+    Type: String
+  SageMakerImageArn:
+    Description: The ARN of the SageMaker image that the image version belongs to.
+    Type: String
+  SageMakerImageVersionArn:
+    Description: The ARN of the image version created on the instance.
+    Type: String
+  KernelGatewayAppSettingsInstanceType:
+    Description: The instance type that the image version runs on.
+    Type: String
+  KernelGatewayAppSettingsSageMakerImageArn:
+    Description: The ARN of the SageMaker image that the image version belongs to.
+    Type: String
+  KernelGatewayAppSettingsSageMakerImageVersionArn:
+    Description: The ARN of the image version created on the instance.
+    Type: String
+  AppImageConfigName:
+    Description:  The name of the AppImageConfig.
+    Type: String
+  ImageName:
+    Description: The name of the CustomImage. Must be unique to your account.
+    Type: String
+  ImageVersionNumber:
+    Description: The version number of the CustomImage.
+    Type: integer
+  AccessStatus:
+    Description: Indicates whether the current user has access to the RStudioServerPro app.
+    Type: String
+  UserGroup:
+    Description: The level of permissions that the user has within the RStudioServerPro app. This value defaults to `User`. The `Admin` value allows the user access to the RStudio Administrative Dashboard.
+    Type: String
+  NotebookOutputOption:
+    Description: Whether to include the notebook cell output when sharing the notebook. The default is Disabled.
+    Type: String
+  S3KmsKeyId:
+    Description: When NotebookOutputOption is Allowed, the AWS Key Management Service (KMS) encryption key ID used to encrypt the notebook cell output in the Amazon S3 bucket.
+    Type: String
+  S3OutputPath:
+    Description: When NotebookOutputOption is Allowed, the Amazon S3 bucket used to store the shared notebook snapshots.
+    Type: String
+Resources:
+  SagemakerUserProfile:
+    Type: AWS::SageMaker::UserProfile
+    Properties: 
+      DomainId: 
+        Ref: DomainId
+      SingleSignOnUserIdentifier: 
+        Ref: SingleSignOnUserIdentifier
+      SingleSignOnUserValue: 
+        Ref: SingleSignOnUserValue
+      Tags: 
+        Ref: Tags
+      UserProfileName: 
+        Ref: UserProfileName
+      UserSettings: 
+        ExecutionRole: 
+          Ref: ExecutionRole
+        JupyterServerAppSettings: 
+          DefaultResourceSpec: 
+            InstanceType: 
+              Ref: InstanceType
+            SageMakerImageArn: 
+              Ref: SageMakerImageArn
+            SageMakerImageVersionArn: 
+              Ref: SageMakerImageVersionArn
+        KernelGatewayAppSettings: 
+          CustomImages: 
+            AppImageConfigName: 
+              Ref: AppImageConfigName
+            ImageName: 
+              Ref: ImageName
+            ImageVersionNumber: 
+              Ref: ImageVersionNumber
+          DefaultResourceSpec: 
+            InstanceType: 
+              Ref: KernelGatewayAppSettingsInstanceType
+            SageMakerImageArn: 
+              Ref: KernelGatewayAppSettingsSageMakerImageArn
+            SageMakerImageVersionArn: 
+              Ref: KernelGatewayAppSettingsSageMakerImageVersionArn
+        RStudioServerProAppSettings: 
+          AccessStatus: 
+            Ref: AccessStatus
+          UserGroup: 
+            Ref: UserGroup
+        SecurityGroups: 
+          Ref: SecurityGroups
+        SharingSettings: 
+      NotebookOutputOption: 
+        Ref: NotebookOutputOption
+      S3KmsKeyId: 
+        Ref: S3KmsKeyId
+      S3OutputPath: 
+        Ref: S3OutputPath
+Outputs:
+  DomainId:
+    Description: The domain ID.
+    Value:
+      Ref: SagemakerUserProfile
+  UserProfileName:
+    Description: The user profile name.
+    Value:
+      Ref: SagemakerUserProfile

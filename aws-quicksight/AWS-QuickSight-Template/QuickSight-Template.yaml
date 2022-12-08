@@ -1,0 +1,70 @@
+Parameters:
+  AwsAccountId:
+    Description: The ID of the AWS account where you are creating an analysis.
+    Type: String
+  TemplateId:
+    Description: An ID for the template that you want to create. This template is unique per AWS Region; in each AWS account.
+    Type: String
+  VersionDescription:
+    Description: A description of the current template version being created. This API operation creates the first version of the template.
+    Type: String
+  Name:
+    Description: A display name for the template.
+    Type: String
+  Actions:
+    Description: The IAM action to grant or revoke permissions on.
+    Type: String
+  Principal:
+    Description: The Amazon Resource Name (ARN) of the principal. 
+    Type: String
+  Tags:
+    Description: Contains a map of the key-value pairs for the resource tag or tags assigned to the dataset.
+    Type: String
+  SourceAnalysisArn:
+    Description: The Amazon Resource Name (ARN) of the resource.
+    Type: String
+  DataSetArn:
+    Description: Dataset Amazon Resource Name (ARN).
+    Type: String
+  DataSetPlaceholder:
+    Description: Dataset placeholder.
+    Type: String 
+  SourceTemplateArn:
+    Description: The Amazon Resource Name (ARN) of the resource.
+    Type: String
+Resources:
+  QuickSightTemplate:
+    Type: AWS::QuickSight::Template
+    Properties: 
+      AwsAccountId: 
+        Ref: AwsAccountId
+      Name: 
+        Ref: Name
+      Permissions: 
+        Actions: 
+          Ref: Actions
+        Principal: 
+          Ref: Principal
+      SourceEntity: 
+      SourceAnalysis: 
+        Arn: 
+          Ref: SourceAnalysisArn
+        DataSetReferences: 
+          DataSetArn: 
+            Ref: DataSetArn
+          DataSetPlaceholder: 
+            Ref: DataSetPlaceholder
+      SourceTemplate: 
+        Arn: 
+          Ref: SourceTemplateArn
+      Tags: 
+        Ref: Tags
+      TemplateId: 
+        Ref: TemplateId
+      VersionDescription: 
+        Ref: VersionDescription
+Outputs:
+  SourceAnalysis:
+    Description: arn of resource
+    Value:
+      Ref: QuickSightTemplate

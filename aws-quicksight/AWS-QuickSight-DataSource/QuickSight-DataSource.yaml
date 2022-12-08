@@ -1,0 +1,38 @@
+Parameters:
+  OracleParametersDatabase:
+    Description: databse
+    Type: String
+  OracleParametersHost:
+    Description: host
+    Type: String
+  OracleParametersPort:
+    Description: port
+    Type: String
+  AwsAccountId:
+    Description: The AWS account ID.
+    Type: String
+  RdsParametersDatabase:
+    Description: database
+    Type: String
+  RdsParametersInstanceId:
+    Description: InstanceId
+    Type: String
+Resources:
+  QuickSightDataSource:
+    Type: AWS::QuickSight::DataSource
+    Properties: 
+      AlternateDataSourceParameters: 
+        OracleParameters: 
+          Database: 
+            Ref: OracleParametersDatabase
+          Host: 
+            Ref: OracleParametersHost
+          Port: 
+            Ref: OracleParametersPort
+        RdsParameters: 
+          Database: 
+            Ref: RdsParametersDatabase
+          InstanceId: 
+            Ref: RdsParametersInstanceId
+      AwsAccountId: 
+        Ref: AwsAccountId

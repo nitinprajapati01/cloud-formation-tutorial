@@ -1,0 +1,26 @@
+Resources:
+  sgLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/sg/${rDmsecurityGroup}'
+      RetentionInDays: 30
+  rReplicationInstanceSubnetGroupLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/subnetgroup/${rReplicationInstanceSubnetGroup}'
+      RetentionInDays: 30
+  rReplicationInstanceLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/replicationInstance/${rReplicationInstance}'
+      RetentionInDays: 30
+  rDmsEndpointTargetLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/EndpointTarget/${rDmsEndpointTarget}'
+      RetentionInDays: 30
+  rDmsReplicationTaskLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/ReplicationTask/${rDmsReplicationTask}'
+      RetentionInDays: 30
