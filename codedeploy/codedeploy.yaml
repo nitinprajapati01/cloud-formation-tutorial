@@ -1,0 +1,124 @@
+Parameters:
+  pApplicationName:
+    Default: 'CodeDeploymentApp'
+    Type: String
+  pComputePlatform:
+    Default: 'Server'
+    Type: String
+  pDeploymentConfigName:
+    Default: 'TestConfiguration'
+    Type: String
+  pHealthyHostsType:
+    Default: 'FLEET_PERCENT'
+    Type: String 
+  pMinHostsValue:
+    Default: '75'
+    Type: String
+  EC2TagKey0:
+    Type: String
+    Default: ec2TagKey0
+  EC2TagValue0:
+    Type: String
+    Default: ec2TagValue0
+  EC2TagKey1:
+    Type: String
+    Default: ec2TagKey1
+  EC2TagValue1:
+    Type: String
+    Default: ec2TagValue1
+  CodeDeployServiceRole:
+    Type: String
+  DeploymentGroupName:
+    Type: String
+  VpcCidr:
+    Type: String
+  SubnetCidr:
+    Type: String
+Resources:
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties: 
+      ApplicationName: !Ref pApplicationName # CodeDeploymentApp
+      ComputePlatform: !Ref pComputePlatform # Server
+      # Tags: 
+      #   - Tag
+
+  CodeDeploymentConfig:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    Properties: 
+      ComputePlatform: !Ref pComputePlatform #Server --> Same name as CodeDeployApplication
+      DeploymentConfigName: !Ref pDeploymentConfigName  # TestConfiguration
+      MinimumHealthyHosts: 
+        Type: !Ref pHealthyHostsType # 'FLEET_PERCENT'
+        Value: !Ref pMinHostsValue #75
+      # TrafficRoutingConfig: 
+      #   TimeBasedCanary: 
+      #     TimeBasedCanary
+      #   TimeBasedLinear: 
+      #     TimeBasedLinear
+      #   Type: String
+
+  myVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+  mySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVpc
+      CidrBlock: !Ref SubnetCidr
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref myVpc
+      InternetGatewayId: !Ref InternetGateway
+  myELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Listeners:
+        - InstancePort: '8000'
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+      Subnets:
+        - !Ref mySubnet
+  mySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties: {}
+  Application:
+    Type: AWS::CodeDeploy::Application
+  DeploymentConfig:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    Properties:
+      MinimumHealthyHosts:
+        Type: FLEET_PERCENT
+        Value: '25'
+  DeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref Application
+      DeploymentConfigName: !Ref DeploymentConfig
+      DeploymentGroupName: !Ref DeploymentGroupName
+      Ec2TagFilters:
+        - Key: !Ref EC2TagKey0
+          Value: !Ref EC2TagValue0
+          Type: KEY_AND_VALUE
+        - Key: !Ref EC2TagKey1
+          Type: KEY_ONLY
+      LoadBalancerInfo:
+        ElbInfoList:
+          - Name: !Ref myELB
+      DeploymentStyle:
+        DeploymentOption: WITH_TRAFFIC_CONTROL
+      # ServiceRoleArn: !GetAtt CodeDeployServiceRole.Arn
+      TriggerConfigurations:
+        - TriggerEvents:
+            - DeploymentSuccess
+            - DeploymentFailure
+          TriggerName: MyTarget
+          TriggerTargetArn: !Ref mySNSTopic
+Outputs:
+  ELB:
+    Description: ELB for DeploymentGroup
+    Value: !Ref myELB

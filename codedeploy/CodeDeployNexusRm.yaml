@@ -1,0 +1,91 @@
+# Step 1- Build a Docker image of your application.
+# Step 2- Push the Docker image to a container registry, such as Amazon Elastic Container Registry (ECR).
+# Step 3- Use AWS CodeDeploy to deploy the Docker image from the container registry to the Nexus repository.
+Parameters:
+  pApplicationName:
+    Default: 'MyNexusCodeDeployApplication'
+    Type: String
+  pDeploymentConfigName:
+    Default: 'CodeDeployDefault.OneAtATime'
+    Type: String
+  pDeploymentGroupName:
+    Default: 'MyNexusDeploymentGroup'
+    Type: String
+Resources:
+  MyCodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: !Ref pApplicationName
+  
+  MyCodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref pApplicationName
+      DeploymentGroupName: !Ref pDeploymentGroupName
+      DeploymentConfigName: !Ref pDeploymentConfigName
+      ServiceRoleArn: !GetAtt MyCodeDeployServiceRole.Arn
+  
+  MyCodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: MyCodeDeployServiceRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codedeploy.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+    
+  MyCodeDeployApplicationRevision:
+    Type: AWS::CodeDeploy::ApplicationRevision
+    Properties:
+      ApplicationName: !Ref MyCodeDeployApplication
+      Revision:
+        RevisionType: AppSpecContent
+        AppSpecContent:
+          Content: |
+            version: 0.0
+            Resources:
+              - TargetService:
+                  Type: AWS::ECS::Service
+                  Properties:
+                    TaskDefinition: my-task-definition
+                    LoadBalancerInfo:
+                      ContainerName: my-container
+                      ContainerPort: 80
+  
+  MyCodeDeployDeployment:
+    Type: AWS::CodeDeploy::Deployment
+    DependsOn: MyCodeDeployDeploymentGroup
+    Properties:
+      ApplicationName: !Ref MyCodeDeployApplication
+      DeploymentGroupName: !Ref MyCodeDeployDeploymentGroup
+      Revision:
+        RevisionType: AppSpecContent
+        AppSpecContent:
+          Content: |
+            version: 0.0
+            Resources:
+              - TargetService:
+                  Type: AWS::ECS::Service
+                  Properties:
+                    TaskDefinition: my-task-definition
+                    LoadBalancerInfo:
+                      ContainerName: my-container
+                      ContainerPort: 80
+
+Outputs:
+  MyCodeDeployApplicationName:
+    Value: !Ref MyCodeDeployApplication
+
+  MyCodeDeployDeploymentGroupName:
+    Value: !Ref MyCodeDeployDeploymentGroup
+
+# In this template, we are assuming that you have already built a Docker image and pushed it to a container registry (e.g., Amazon ECR). The my-task-definition represents the task definition in Amazon ECS that uses the Docker image, and my-container is the name of the container within the task definition.
+
+# Note that the MyCodeDeployApplicationRevision and MyCodeDeployDeployment resources use AppSpecContent as the revision type, and the AppSpec content describes the ECS service to be updated with the new Docker image.
+
+# Please modify the template with the appropriate values for your environment, including the task definition, container name, and any other required properties.
